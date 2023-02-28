@@ -9,3 +9,7 @@ httpClientConfig:
   maxIdleConnsPerHost: 50
   idleConnTimeoutSeconds: 90
   requestTimeoutSeconds: 30
+dBConfig:
+  locationsDatabaseConnection: "postgres://postgres:password@localhost:5432/templatedb"
+openTelemetryConfig:
+  collectorEndpoint: "http://localhost:14268/api/traces"

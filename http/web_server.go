@@ -54,12 +54,13 @@ func handleGracefulShutdown(serverCtx context.Context, serverCancelFn context.Ca
 	<-c
 	shutdownLog.Warn(fnName, "", "Shutting down app")
 
-	// Flush any logs in the buffer
-	log.FlushLogger()
-
 	// Shutdown signal with grace period of 30 seconds
 	shutdownCtx, shutdownCancelFn := context.WithTimeout(serverCtx, 30*time.Second)
 	defer shutdownCancelFn()
+
+	// Flush any buffered logs and traces
+	log.FlushLogger()
+	log.FlushTracerProvider(shutdownCtx)
 
 	// Trigger graceful shutdown
 	err := server.Shutdown(shutdownCtx)

@@ -20,9 +20,14 @@ const (
 )
 
 type ServiceConfig struct {
-	AppConfig        AppConfig        `yaml:"appConfig"`
-	DBConfig         DBConfig         `yaml:"dBConfig"`
-	HTTPClientConfig HTTPClientConfig `yaml:"httpClientConfig"`
+	AppConfig           AppConfig           `yaml:"appConfig"`
+	DBConfig            DBConfig            `yaml:"dBConfig"`
+	HTTPClientConfig    HTTPClientConfig    `yaml:"httpClientConfig"`
+	OpenTelemetryConfig OpenTelemetryConfig `yaml:"openTelemetryConfig"`
+}
+
+type OpenTelemetryConfig struct {
+	CollectorEndpoint string `yaml:"collectorEndpoint"`
 }
 
 type DBConfig struct {
