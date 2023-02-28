@@ -7,8 +7,6 @@ import (
 	"go-service-template/domain/googlemaps"
 	customHTTP "go-service-template/http"
 	"go-service-template/log"
-	"go-service-template/utils"
-
 	"net/http"
 	"time"
 )
@@ -46,8 +44,8 @@ func (r *Repository) ValidateAddress(ctx domain.ApplicationContext, request goog
 	r.logger.Info(fnName,
 		ctx.GetCorrelationID(),
 		"Validate address endpoint response",
-		utils.GenericParam{
-			Key: "response_metadata",
+		log.LoggingParam{
+			Name: "response_metadata",
 			Value: map[string]interface{}{
 				"status_code": res.StatusCode,
 				"body":        string(res.BodyPayload),
@@ -63,8 +61,8 @@ func (r *Repository) ValidateAddress(ctx domain.ApplicationContext, request goog
 
 		// Else, log error and return
 		err = errors.New("error from Google Maps API")
-		r.logger.Error(fnName, ctx.GetCorrelationID(), err, utils.GenericParam{
-			Key:   "error_payload",
+		r.logger.Error(fnName, ctx.GetCorrelationID(), err.Error(), err, log.LoggingParam{
+			Name:  "error_payload",
 			Value: string(res.BodyPayload),
 		})
 

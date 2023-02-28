@@ -4,7 +4,6 @@ import (
 	"fmt"
 	customHTTP "go-service-template/http"
 	"go-service-template/log"
-	"go-service-template/utils"
 	"net/http"
 	"time"
 )
@@ -53,13 +52,13 @@ func CreateLoggingMiddleware() customHTTP.Middleware {
 				"LoggingMiddleware",
 				appCtx.GetCorrelationID(),
 				fmt.Sprintf("Request to %v ended with status %v", r.URL.EscapedPath(), wrapped.status),
-				utils.GenericParam{
-					Key: "RequestMetadata",
+				log.LoggingParam{
+					Name: "request_metadata",
 					Value: map[string]interface{}{
-						"HTTP Status": wrapped.status,
-						"HTTP Method": r.Method,
-						"Path":        r.URL.EscapedPath(),
-						"Duration":    time.Since(start).String(),
+						"http_status": wrapped.status,
+						"http_method": r.Method,
+						"path":        r.URL.EscapedPath(),
+						"duration":    time.Since(start).String(),
 					}},
 			)
 		}

@@ -10,4 +10,4 @@ httpClientConfig:
   idleConnTimeoutSeconds: 90
   requestTimeoutSeconds: 30
 dBConfig:
-  locationsDatabaseConnection: "postgres://postgres:password@templatedb:5432/templatedb"
+  locationsDatabaseConnection: "postgres://postgres:password@templatedb:5432/templatedb?sslmode=disable"

@@ -18,13 +18,5 @@ services:
       ENV: dev
     depends_on:
       - templatedb
-  prometheus-server:
-    image: prom/prometheus:v2.37.6
-    volumes:
-      - ./prometheus/:/etc/prometheus/
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-    ports:
-      - "9090:9090"
 volumes:
   pgdata:

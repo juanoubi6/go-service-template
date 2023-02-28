@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"github.com/pkg/errors"
 	customHTTP "go-service-template/http"
 	"go-service-template/http/middleware"
 	"go-service-template/log"
@@ -37,7 +36,7 @@ func (hc *HealthController) health(writer http.ResponseWriter, r *http.Request) 
 
 	err := SendSuccessResponse(writer, "Service is healthy", http.StatusOK)
 	if err != nil {
-		hc.logger.Error("Health", appCtx.GetCorrelationID(), errors.New("unable to send response: "+err.Error()))
+		hc.logger.Error("Health", appCtx.GetCorrelationID(), "unable to send response", err)
 		return
 	}
 }

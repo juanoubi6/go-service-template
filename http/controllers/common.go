@@ -18,8 +18,8 @@ const (
 )
 
 type APIResponse struct {
-	ApiError *APIError `json:"error"`
-	Data     any       `json:"data"`
+	ApiError *APIError `json:"error,omitempty"`
+	Data     any       `json:"data,omitempty"`
 }
 
 type APIError struct {

@@ -26,7 +26,7 @@ func NewLocationController(locService services.ILocationService) *LocationContro
 }
 
 // Nada godoc
-// @Summary POSTCreateLocationEndpoint
+// @Summary Create location
 // @Description Create a new location and a default sub location
 // @Produce json
 // @Param request body dto.CreateLocationRequest true "Location attributes"
@@ -41,7 +41,7 @@ func (c *LocationController) CreateLocationEndpoint() customHTTP.Endpoint {
 }
 
 // Nada godoc
-// @Summary PUTUpdateLocationEndpoint
+// @Summary Update existing location
 // @Description Update an existing location
 // @Produce json
 // @Param locationID path string true "Location ID"
@@ -57,7 +57,7 @@ func (c *LocationController) UpdateLocationEndpoint() customHTTP.Endpoint {
 }
 
 // Nada godoc
-// @Summary GETPaginatedLocationsEndpoint
+// @Summary Retrieve paginated locations
 // @Description Get paginated locations
 // @Produce json
 // @Param name query string false "Optional location name section. Service will filter locations that include this string"
@@ -75,7 +75,7 @@ func (c *LocationController) PaginatedLocationsEndpoint() customHTTP.Endpoint {
 }
 
 // Nada godoc
-// @Summary GETLocationDetailsEndpoint
+// @Summary Get location details
 // @Description Get location details
 // @Produce json
 // @Param locationID path string true "Location ID"
@@ -95,21 +95,21 @@ func (c *LocationController) createLocation(w http.ResponseWriter, r *http.Reque
 
 	var createLocationRequest dto.CreateLocationRequest
 	if err := json.NewDecoder(r.Body).Decode(&createLocationRequest); err != nil {
-		c.logger.Error(fnName, appCtx.GetCorrelationID(), err)
+		c.logger.Error(fnName, appCtx.GetCorrelationID(), "failed to parse location data", err)
 		_ = SendFailureResponse(w, http.StatusBadRequest, err, "failed to parse location data", appCtx.GetCorrelationID())
 		return
 	}
 
 	location, err := c.locationService.CreateLocation(appCtx, createLocationRequest)
 	if err != nil {
-		c.logger.Error(fnName, appCtx.GetCorrelationID(), err)
+		c.logger.Error(fnName, appCtx.GetCorrelationID(), "failed to create location", err)
 		_ = SendFailureResponse(w, HTTPStatusFromError(err), err, err.Error(), appCtx.GetCorrelationID())
 		return
 	}
 
 	err = SendSuccessResponse(w, location, 200)
 	if err != nil {
-		c.logger.Error(fnName, appCtx.GetCorrelationID(), fmt.Errorf("error sending API response: %w", err))
+		c.logger.Error(fnName, appCtx.GetCorrelationID(), "error sending API response", err)
 	}
 }
 
@@ -120,35 +120,35 @@ func (c *LocationController) updateLocation(w http.ResponseWriter, r *http.Reque
 	locationID := chi.URLParam(r, "locationID")
 	if locationID == "" {
 		errMsg := errors.New("no locationID sent in URL")
-		c.logger.Error(fnName, appCtx.GetCorrelationID(), errMsg)
+		c.logger.Error(fnName, appCtx.GetCorrelationID(), errMsg.Error(), errMsg)
 		_ = SendFailureResponse(w, http.StatusBadRequest, errMsg, errMsg.Error(), appCtx.GetCorrelationID())
 		return
 	}
 
 	var updateLocationRequest dto.UpdateLocationRequest
 	if err := json.NewDecoder(r.Body).Decode(&updateLocationRequest); err != nil {
-		c.logger.Error(fnName, appCtx.GetCorrelationID(), err)
+		c.logger.Error(fnName, appCtx.GetCorrelationID(), "failed to parse location data", err)
 		_ = SendFailureResponse(w, http.StatusBadRequest, err, "failed to parse location data", appCtx.GetCorrelationID())
 		return
 	}
 
 	if locationID != updateLocationRequest.ID {
 		errMsg := errors.New("mismatch between location ID in url and the one in the request payload")
-		c.logger.Error(fnName, appCtx.GetCorrelationID(), errMsg)
+		c.logger.Error(fnName, appCtx.GetCorrelationID(), errMsg.Error(), errMsg)
 		_ = SendFailureResponse(w, http.StatusBadRequest, errMsg, errMsg.Error(), appCtx.GetCorrelationID())
 		return
 	}
 
 	location, err := c.locationService.UpdateLocation(appCtx, updateLocationRequest)
 	if err != nil {
-		c.logger.Error(fnName, appCtx.GetCorrelationID(), err)
-		_ = SendFailureResponse(w, HTTPStatusFromError(err), err, err.Error(), appCtx.GetCorrelationID())
+		c.logger.Error(fnName, appCtx.GetCorrelationID(), "failed to update location", err)
+		_ = SendFailureResponse(w, HTTPStatusFromError(err), err, "failed to update location", appCtx.GetCorrelationID())
 		return
 	}
 
 	err = SendSuccessResponse(w, location, 200)
 	if err != nil {
-		c.logger.Error(fnName, appCtx.GetCorrelationID(), fmt.Errorf("error sending API response: %w", err))
+		c.logger.Error(fnName, appCtx.GetCorrelationID(), "error sending API response", err)
 	}
 }
 
@@ -158,21 +158,21 @@ func (c *LocationController) getPaginatedLocations(w http.ResponseWriter, r *htt
 
 	filters, err := buildLocationFilters(r)
 	if err != nil {
-		c.logger.Error(fnName, appCtx.GetCorrelationID(), fmt.Errorf("error building location filters: %w", err))
+		c.logger.Error(fnName, appCtx.GetCorrelationID(), "error building location filters", err)
 		_ = SendFailureResponse(w, http.StatusBadRequest, err, err.Error(), appCtx.GetCorrelationID())
 		return
 	}
 
 	locationPage, err := c.locationService.GetPaginatedLocations(appCtx, filters)
 	if err != nil {
-		c.logger.Error(fnName, appCtx.GetCorrelationID(), err)
-		_ = SendFailureResponse(w, HTTPStatusFromError(err), err, err.Error(), appCtx.GetCorrelationID())
+		c.logger.Error(fnName, appCtx.GetCorrelationID(), "failed to get paginated locations", err)
+		_ = SendFailureResponse(w, HTTPStatusFromError(err), err, "failed to get paginated locations", appCtx.GetCorrelationID())
 		return
 	}
 
 	err = SendSuccessResponse(w, locationPage, 200)
 	if err != nil {
-		c.logger.Error(fnName, appCtx.GetCorrelationID(), fmt.Errorf("error sending API response: %w", err))
+		c.logger.Error(fnName, appCtx.GetCorrelationID(), "error sending API response", err)
 	}
 }
 
@@ -183,14 +183,14 @@ func (c *LocationController) getLocationDetails(w http.ResponseWriter, r *http.R
 	locationID := chi.URLParam(r, "locationID")
 	if locationID == "" {
 		errMsg := errors.New("no locationID sent in URL")
-		c.logger.Error(fnName, appCtx.GetCorrelationID(), errMsg)
+		c.logger.Error(fnName, appCtx.GetCorrelationID(), errMsg.Error(), errMsg)
 		_ = SendFailureResponse(w, http.StatusBadRequest, errMsg, errMsg.Error(), appCtx.GetCorrelationID())
 		return
 	}
 
 	location, err := c.locationService.GetLocationByID(appCtx, locationID)
 	if err != nil {
-		c.logger.Error(fnName, appCtx.GetCorrelationID(), err)
+		c.logger.Error(fnName, appCtx.GetCorrelationID(), "failed to retrieve location by ID", err)
 		_ = SendFailureResponse(w, HTTPStatusFromError(err), err, err.Error(), appCtx.GetCorrelationID())
 		return
 	}
@@ -203,6 +203,6 @@ func (c *LocationController) getLocationDetails(w http.ResponseWriter, r *http.R
 
 	err = SendSuccessResponse(w, location, 200)
 	if err != nil {
-		c.logger.Error(fnName, appCtx.GetCorrelationID(), fmt.Errorf("error sending API response: %w", err))
+		c.logger.Error(fnName, appCtx.GetCorrelationID(), "error sending API response", err)
 	}
 }

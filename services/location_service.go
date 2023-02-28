@@ -8,7 +8,6 @@ import (
 	"go-service-template/domain/googlemaps"
 	"go-service-template/log"
 	"go-service-template/repositories"
-	"go-service-template/utils"
 	"strings"
 )
 
@@ -48,7 +47,7 @@ func (s *LocationService) CreateLocation(ctx domain.ApplicationContext, newLocat
 	// Check if location name is already in use
 	nameInUse, err := db.CheckLocationNameExistence(ctx, newLocationData.Name)
 	if err != nil {
-		s.logger.Error(fnName, ctx.GetCorrelationID(), err)
+		s.logger.Error(fnName, ctx.GetCorrelationID(), "failed to check location name existence", err)
 		return location, err
 	}
 	if nameInUse {
@@ -72,7 +71,7 @@ func (s *LocationService) CreateLocation(ctx domain.ApplicationContext, newLocat
 
 		return nil
 	}); err != nil {
-		s.logger.Error(fnName, ctx.GetCorrelationID(), err)
+		s.logger.Error(fnName, ctx.GetCorrelationID(), "tx failed", err)
 		return location, err
 	}
 
@@ -120,7 +119,7 @@ func (s *LocationService) UpdateLocation(ctx domain.ApplicationContext, updatedL
 
 		return nil
 	}); err != nil {
-		s.logger.Error(fnName, ctx.GetCorrelationID(), err)
+		s.logger.Error(fnName, ctx.GetCorrelationID(), "tx failed", err)
 		return location, err
 	}
 
@@ -146,7 +145,7 @@ func (s *LocationService) GetPaginatedLocations(ctx domain.ApplicationContext, f
 
 	page, err = db.GetPaginatedLocations(ctx, filters)
 	if err != nil {
-		s.logger.Error(fnName, ctx.GetCorrelationID(), fmt.Errorf("failed to retrieve paginated locations: %w", err))
+		s.logger.Error(fnName, ctx.GetCorrelationID(), "failed to retrieve paginated locations", err)
 		return page, err
 	}
 
@@ -170,7 +169,7 @@ func (s *LocationService) buildNewLocation(ctx domain.ApplicationContext, data d
 	}
 
 	if validatedAddress == nil {
-		s.logger.Warn("buildNewLocation", ctx.GetCorrelationID(), "failed to validate address", utils.GenericParam{Key: "address_data", Value: data})
+		s.logger.Warn("buildNewLocation", ctx.GetCorrelationID(), "failed to validate address", log.LoggingParam{Name: "address_data", Value: data})
 		return domain.Location{}, domain.AddressNotValidErr{Msg: "the address information does not correspond to a valid address"}
 	}
 
@@ -226,7 +225,7 @@ func (s *LocationService) updateLocation(
 	}
 
 	if validatedAddress == nil {
-		s.logger.Warn("updateLocation", ctx.GetCorrelationID(), "failed to validate address", utils.GenericParam{Key: "address_data", Value: updateData})
+		s.logger.Warn("updateLocation", ctx.GetCorrelationID(), "failed to validate address", log.LoggingParam{Name: "address_data", Value: updateData})
 		return domain.AddressNotValidErr{Msg: "the address information does not correspond to a valid address"}
 	}
 

@@ -108,7 +108,7 @@ func (cli *CustomClient) Do(ctx domain.ApplicationContext, requestValues Request
 
 	resp, err := cli.baseClient.Do(req)
 	if err != nil {
-		cli.logger.Error(fnName, cid, err)
+		cli.logger.Error(fnName, cid, "http request failed", err)
 		return CustomHTTPResponse{}, fmt.Errorf("failed to execute request: %w", err)
 	}
 
@@ -153,7 +153,7 @@ func (cli *CustomClient) DoWithRetry(
 			resp.Body.Close()
 		}
 		if err != nil {
-			cli.logger.Error("DoWithRetry", cid, err)
+			cli.logger.Error("DoWithRetry", cid, "http request failed", err)
 		}
 
 		attempts--
@@ -181,14 +181,14 @@ func (cli *CustomClient) handleResponse(
 	defer func() {
 		err := response.Body.Close()
 		if err != nil {
-			cli.logger.Error(functionName, cid, fmt.Errorf("failed to close response body: %w", err))
+			cli.logger.Error(functionName, cid, "failed to close response body", err)
 		}
 	}()
 
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
-		cli.logger.Error(functionName, cid, err)
-		return CustomHTTPResponse{}, fmt.Errorf("failed to read response body: %w", err)
+		cli.logger.Error(functionName, cid, "failed to read response body", err)
+		return CustomHTTPResponse{}, err
 	}
 
 	customResponse := CustomHTTPResponse{
@@ -199,17 +199,17 @@ func (cli *CustomClient) handleResponse(
 	}
 
 	cli.logger.Info(functionName, cid, "HTTP request successful",
-		utils.GenericParam{
-			Key: "url", Value: response.Request.URL.RawQuery,
+		log.LoggingParam{
+			Name: "url", Value: response.Request.URL.RawQuery,
 		},
-		utils.GenericParam{
-			Key: "status_code", Value: response.StatusCode,
+		log.LoggingParam{
+			Name: "status_code", Value: response.StatusCode,
 		},
 	)
 
 	cli.logger.Debug(functionName, cid, "HTTP request body",
-		utils.GenericParam{
-			Key: "response_body", Value: string(customResponse.BodyPayload),
+		log.LoggingParam{
+			Name: "response_body", Value: string(customResponse.BodyPayload),
 		},
 	)
 

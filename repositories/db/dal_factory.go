@@ -97,8 +97,7 @@ func pingDB(dbPtr *sql.DB) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			err := fmt.Errorf("caught panic in pingDB goroutine: %v", r)
-			pingDBLogger.Error("pingDB", "", err)
+			pingDBLogger.Error("pingDB", "", "caught panic in pingDB goroutine", fmt.Errorf("%v", r))
 		}
 	}()
 
@@ -108,7 +107,7 @@ func pingDB(dbPtr *sql.DB) {
 
 		err := dbPtr.PingContext(ctx)
 		if err != nil {
-			pingDBLogger.Error("pingDB", "", err)
+			pingDBLogger.Error("pingDB", "", "failed to ping DB", err)
 		}
 
 		time.Sleep(time.Minute * 1)

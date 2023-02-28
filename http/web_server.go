@@ -45,5 +45,8 @@ func gracefulShutdown() {
 	<-c
 	shutdownLog.Warn("gracefulShutdown", "", "Shutting down app, notifying workers to exit")
 
+	// Flush any logs
+	log.FlushLogger()
+
 	return
 }
