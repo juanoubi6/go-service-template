@@ -1,0 +1,4 @@
+Additional extensions are required
+
+CREATE EXTENSION uuid-ossp;
+CREATE EXTENSION citext;

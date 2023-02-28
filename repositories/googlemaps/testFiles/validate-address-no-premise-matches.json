@@ -1,0 +1,21 @@
+{
+  "matches": [
+    {
+      "street_number": "10700",
+      "route": "Beech Avenue",
+      "city": "Fontana",
+      "state": "California",
+      "zip_code": "92337",
+      "zip_code_suffix": "7205",
+      "county": "San Bernardino County",
+      "country": "United States",
+      "full_address": "10700 Beech Ave, Fontana, CA 92337, USA",
+      "neighborhood": "Southwest Industrial Park",
+      "latitude": 34.05935180000001,
+      "longitude": -117.4728442,
+      "partial_match": false,
+      "match_type": "not-premise",
+      "location_type": "ROOFTOP"
+    }
+  ]
+}

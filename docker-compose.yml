@@ -1,0 +1,30 @@
+version: '3'
+services:
+  templatedb:
+    image: postgres:15.2-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: templatedb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  go-service-template-app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      ENV: dev
+    depends_on:
+      - templatedb
+  prometheus-server:
+    image: prom/prometheus:v2.37.6
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - "9090:9090"
+volumes:
+  pgdata:

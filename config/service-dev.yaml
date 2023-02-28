@@ -1,0 +1,13 @@
+appConfig:
+  version: "1.0"
+  name: "go-service-template"
+  bindAddress: 0.0.0.0:8080
+httpClientConfig:
+  locationsDatabaseConnection: "url"
+  maxIdleConns: 100
+  maxConnsPerHost: 100
+  maxIdleConnsPerHost: 50
+  idleConnTimeoutSeconds: 90
+  requestTimeoutSeconds: 30
+dBConfig:
+  locationsDatabaseConnection: "postgres://postgres:password@templatedb:5432/templatedb"

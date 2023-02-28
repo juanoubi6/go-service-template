@@ -1,0 +1,230 @@
+definitions:
+  domain.ContactInformation:
+    properties:
+      contact_person:
+        type: string
+      email:
+        type: string
+      phone_number:
+        type: string
+    type: object
+  domain.ExampleCursorPage:
+    properties:
+      data:
+        items: {}
+        type: array
+      limit:
+        type: integer
+      next_page:
+        type: string
+      previous_page:
+        type: string
+    type: object
+  domain.Location:
+    properties:
+      active:
+        type: boolean
+      id:
+        type: string
+      information:
+        $ref: '#/definitions/domain.LocationInformation'
+      location_type:
+        $ref: '#/definitions/domain.LocationType'
+      name:
+        type: string
+      supplier:
+        $ref: '#/definitions/domain.Supplier'
+    type: object
+  domain.LocationInformation:
+    properties:
+      address:
+        type: string
+      city:
+        type: string
+      contact_information:
+        $ref: '#/definitions/domain.ContactInformation'
+      latitude:
+        type: number
+      longitude:
+        type: number
+      state:
+        type: string
+      zipcode:
+        type: string
+    type: object
+  domain.LocationType:
+    properties:
+      id:
+        type: integer
+      type:
+        type: string
+    type: object
+  domain.Supplier:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  dto.CreateLocationRequest:
+    properties:
+      address:
+        type: string
+      city:
+        type: string
+      contact_person:
+        type: string
+      email:
+        type: string
+      location_type_id:
+        type: integer
+      name:
+        type: string
+      phone_number:
+        type: string
+      state:
+        type: string
+      supplier_id:
+        type: integer
+      zipcode:
+        type: string
+    type: object
+  dto.UpdateLocationRequest:
+    properties:
+      active:
+        type: boolean
+      address:
+        type: string
+      city:
+        type: string
+      contact_person:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      location_type_id:
+        type: integer
+      name:
+        type: string
+      phone_number:
+        type: string
+      state:
+        type: string
+      supplier_id:
+        type: integer
+      zipcode:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: Sample service that creates "locations"
+  title: Swagger go-service-template API
+  version: "1.0"
+paths:
+  /health:
+    get:
+      description: Simple healthcheck endpoint
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+      summary: Check health
+  /v1/locations:
+    get:
+      description: Get paginated locations
+      parameters:
+      - description: Optional location name section. Service will filter locations
+          that include this string
+        in: query
+        name: name
+        type: string
+      - description: Pagination limit, default to 10000
+        in: query
+        name: limit
+        type: integer
+      - description: Cursor value, default to empty string
+        in: query
+        name: cursor
+        type: string
+      - description: 'Indicates the cursor direction. Accepted values: ''next'' or
+          ''prev'''
+        in: query
+        name: direction
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.ExampleCursorPage'
+            type: array
+      summary: GETPaginatedLocationsEndpoint
+    post:
+      description: Create a new location and a default sub location
+      parameters:
+      - description: Location attributes
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateLocationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Location'
+            type: array
+      summary: POSTCreateLocationEndpoint
+  /v1/locations/{locationID}:
+    get:
+      description: Get location details
+      parameters:
+      - description: Location ID
+        in: path
+        name: locationID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Location'
+      summary: GETLocationDetailsEndpoint
+    put:
+      description: Update an existing location
+      parameters:
+      - description: Location ID
+        in: path
+        name: locationID
+        required: true
+        type: string
+      - description: Location attributes
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateLocationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Location'
+            type: array
+      summary: PUTUpdateLocationEndpoint
+swagger: "2.0"
+tags:
+- description: API endpoints
+  name: go-service-template
