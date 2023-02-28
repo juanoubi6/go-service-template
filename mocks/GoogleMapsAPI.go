@@ -3,8 +3,8 @@
 package mocks
 
 import (
-	domain "go-service-template/domain"
 	googlemaps "go-service-template/domain/googlemaps"
+	domain "go-service-template/monitor"
 
 	mock "github.com/stretchr/testify/mock"
 )

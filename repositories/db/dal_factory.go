@@ -8,7 +8,7 @@ import (
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
 	"go-service-template/config"
-	"go-service-template/log"
+	"go-service-template/monitor"
 	"go-service-template/repositories"
 	sqlTrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/database/sql"
 	"regexp"
@@ -93,7 +93,7 @@ func connectDB(connString string, dbConfig config.DBConfig) (*sql.DB, error) {
 }
 
 func pingDB(dbPtr *sql.DB) {
-	pingDBLogger := log.GetStdLogger("pingDB")
+	pingDBLogger := monitor.GetStdLogger("pingDB")
 
 	defer func() {
 		if r := recover(); r != nil {

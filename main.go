@@ -13,7 +13,7 @@ import (
 	customHTTP "go-service-template/http"
 	"go-service-template/http/controllers"
 	httpMiddleware "go-service-template/http/middleware"
-	"go-service-template/log"
+	"go-service-template/monitor"
 	"go-service-template/repositories/db"
 	googleMapsRepo "go-service-template/repositories/googlemaps"
 	"go-service-template/services"
@@ -27,7 +27,7 @@ func main() {
 	}
 
 	// Open Telemetry
-	log.RegisterTraceProvider(appCfg.OpenTelemetryConfig, appCfg.AppConfig)
+	monitor.RegisterTraceProvider(appCfg.OpenTelemetryConfig, appCfg.AppConfig)
 
 	// Create support structures
 	customHTTPClient := customHTTP.CreateCustomHTTPClient(appCfg.HTTPClientConfig)

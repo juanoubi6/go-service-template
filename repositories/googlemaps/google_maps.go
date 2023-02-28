@@ -3,10 +3,9 @@ package googlemaps
 import (
 	"encoding/json"
 	"errors"
-	"go-service-template/domain"
 	"go-service-template/domain/googlemaps"
 	customHTTP "go-service-template/http"
-	"go-service-template/log"
+	"go-service-template/monitor"
 	"net/http"
 	"time"
 )
@@ -14,19 +13,19 @@ import (
 const PremisePlaceType = "premise"
 
 type Repository struct {
-	logger     log.StdLogger
+	logger     monitor.StdLogger
 	httpClient customHTTP.CustomHTTPClient
 }
 
 func NewGoogleMapsRepository(httpClient customHTTP.CustomHTTPClient) *Repository {
 	return &Repository{
-		logger:     log.GetStdLogger("Repository"),
+		logger:     monitor.GetStdLogger("Repository"),
 		httpClient: httpClient,
 	}
 }
 
 // ValidateAddress is just a simplified example on how do we call external services
-func (r *Repository) ValidateAddress(ctx domain.ApplicationContext, request googlemaps.AddressValidationRequest) (*googlemaps.AddressValidateMatch, error) {
+func (r *Repository) ValidateAddress(ctx monitor.ApplicationContext, request googlemaps.AddressValidationRequest) (*googlemaps.AddressValidateMatch, error) {
 	fnName := "ValidateAddress"
 
 	requestValues := customHTTP.RequestValues{
@@ -44,7 +43,7 @@ func (r *Repository) ValidateAddress(ctx domain.ApplicationContext, request goog
 	r.logger.Info(fnName,
 		ctx.GetCorrelationID(),
 		"Validate address endpoint response",
-		log.LoggingParam{
+		monitor.LoggingParam{
 			Name: "response_metadata",
 			Value: map[string]interface{}{
 				"status_code": res.StatusCode,
@@ -61,7 +60,7 @@ func (r *Repository) ValidateAddress(ctx domain.ApplicationContext, request goog
 
 		// Else, log error and return
 		err = errors.New("error from Google Maps API")
-		r.logger.Error(fnName, ctx.GetCorrelationID(), err.Error(), err, log.LoggingParam{
+		r.logger.Error(fnName, ctx.GetCorrelationID(), err.Error(), err, monitor.LoggingParam{
 			Name:  "error_payload",
 			Value: string(res.BodyPayload),
 		})

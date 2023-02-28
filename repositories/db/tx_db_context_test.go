@@ -6,12 +6,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"go-service-template/domain"
+	"go-service-template/monitor"
 	"log"
 	"testing"
 )
 
-var mockContext = domain.CreateAppContext(context.Background(), "")
+var mockContext = monitor.CreateAppContext(context.Background(), "")
 
 type TxDBContextSuite struct {
 	suite.Suite
@@ -38,7 +38,7 @@ func (s *TxDBContextSuite) Test_WithTx_SuccessfullyWrapsTxExecutionOnSuccess() {
 	s.sqlMock.ExpectPing()
 	s.sqlMock.ExpectCommit()
 
-	txErr := s.dbContext.WithTx(mockContext, func(fnCtx domain.ApplicationContext) error {
+	txErr := s.dbContext.WithTx(mockContext, func(fnCtx monitor.ApplicationContext) error {
 		err := s.dbContext.Ping()
 		if err != nil {
 			return err
@@ -58,7 +58,7 @@ func (s *TxDBContextSuite) Test_WithTx_SuccessfullyWrapsTxExecutionOnFailure() {
 	s.sqlMock.ExpectPing().WillReturnError(errors.New("ping error"))
 	s.sqlMock.ExpectRollback()
 
-	txErr := s.dbContext.WithTx(mockContext, func(fnCtx domain.ApplicationContext) error {
+	txErr := s.dbContext.WithTx(mockContext, func(fnCtx monitor.ApplicationContext) error {
 		err := s.dbContext.Ping()
 		if err != nil {
 			return err

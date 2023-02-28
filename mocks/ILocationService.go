@@ -5,6 +5,7 @@ package mocks
 import (
 	domain "go-service-template/domain"
 	dto "go-service-template/domain/dto"
+	"go-service-template/monitor"
 
 	mock "github.com/stretchr/testify/mock"
 )
@@ -15,18 +16,18 @@ type ILocationService struct {
 }
 
 // CreateLocation provides a mock function with given fields: ctx, newLocationData
-func (_m *ILocationService) CreateLocation(ctx domain.ApplicationContext, newLocationData dto.CreateLocationRequest) (domain.Location, error) {
+func (_m *ILocationService) CreateLocation(ctx monitor.ApplicationContext, newLocationData dto.CreateLocationRequest) (domain.Location, error) {
 	ret := _m.Called(ctx, newLocationData)
 
 	var r0 domain.Location
-	if rf, ok := ret.Get(0).(func(domain.ApplicationContext, dto.CreateLocationRequest) domain.Location); ok {
+	if rf, ok := ret.Get(0).(func(monitor.ApplicationContext, dto.CreateLocationRequest) domain.Location); ok {
 		r0 = rf(ctx, newLocationData)
 	} else {
 		r0 = ret.Get(0).(domain.Location)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(domain.ApplicationContext, dto.CreateLocationRequest) error); ok {
+	if rf, ok := ret.Get(1).(func(monitor.ApplicationContext, dto.CreateLocationRequest) error); ok {
 		r1 = rf(ctx, newLocationData)
 	} else {
 		r1 = ret.Error(1)
@@ -36,11 +37,11 @@ func (_m *ILocationService) CreateLocation(ctx domain.ApplicationContext, newLoc
 }
 
 // GetLocationByID provides a mock function with given fields: ctx, id
-func (_m *ILocationService) GetLocationByID(ctx domain.ApplicationContext, id string) (*domain.Location, error) {
+func (_m *ILocationService) GetLocationByID(ctx monitor.ApplicationContext, id string) (*domain.Location, error) {
 	ret := _m.Called(ctx, id)
 
 	var r0 *domain.Location
-	if rf, ok := ret.Get(0).(func(domain.ApplicationContext, string) *domain.Location); ok {
+	if rf, ok := ret.Get(0).(func(monitor.ApplicationContext, string) *domain.Location); ok {
 		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
@@ -49,7 +50,7 @@ func (_m *ILocationService) GetLocationByID(ctx domain.ApplicationContext, id st
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(domain.ApplicationContext, string) error); ok {
+	if rf, ok := ret.Get(1).(func(monitor.ApplicationContext, string) error); ok {
 		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
@@ -59,18 +60,18 @@ func (_m *ILocationService) GetLocationByID(ctx domain.ApplicationContext, id st
 }
 
 // GetPaginatedLocations provides a mock function with given fields: ctx, filters
-func (_m *ILocationService) GetPaginatedLocations(ctx domain.ApplicationContext, filters domain.LocationsFilters) (domain.CursorPage[domain.Location], error) {
+func (_m *ILocationService) GetPaginatedLocations(ctx monitor.ApplicationContext, filters domain.LocationsFilters) (domain.CursorPage[domain.Location], error) {
 	ret := _m.Called(ctx, filters)
 
 	var r0 domain.CursorPage[domain.Location]
-	if rf, ok := ret.Get(0).(func(domain.ApplicationContext, domain.LocationsFilters) domain.CursorPage[domain.Location]); ok {
+	if rf, ok := ret.Get(0).(func(monitor.ApplicationContext, domain.LocationsFilters) domain.CursorPage[domain.Location]); ok {
 		r0 = rf(ctx, filters)
 	} else {
 		r0 = ret.Get(0).(domain.CursorPage[domain.Location])
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(domain.ApplicationContext, domain.LocationsFilters) error); ok {
+	if rf, ok := ret.Get(1).(func(monitor.ApplicationContext, domain.LocationsFilters) error); ok {
 		r1 = rf(ctx, filters)
 	} else {
 		r1 = ret.Error(1)
@@ -80,18 +81,18 @@ func (_m *ILocationService) GetPaginatedLocations(ctx domain.ApplicationContext,
 }
 
 // UpdateLocation provides a mock function with given fields: ctx, updatedLocationData
-func (_m *ILocationService) UpdateLocation(ctx domain.ApplicationContext, updatedLocationData dto.UpdateLocationRequest) (domain.Location, error) {
+func (_m *ILocationService) UpdateLocation(ctx monitor.ApplicationContext, updatedLocationData dto.UpdateLocationRequest) (domain.Location, error) {
 	ret := _m.Called(ctx, updatedLocationData)
 
 	var r0 domain.Location
-	if rf, ok := ret.Get(0).(func(domain.ApplicationContext, dto.UpdateLocationRequest) domain.Location); ok {
+	if rf, ok := ret.Get(0).(func(monitor.ApplicationContext, dto.UpdateLocationRequest) domain.Location); ok {
 		r0 = rf(ctx, updatedLocationData)
 	} else {
 		r0 = ret.Get(0).(domain.Location)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(domain.ApplicationContext, dto.UpdateLocationRequest) error); ok {
+	if rf, ok := ret.Get(1).(func(monitor.ApplicationContext, dto.UpdateLocationRequest) error); ok {
 		r1 = rf(ctx, updatedLocationData)
 	} else {
 		r1 = ret.Error(1)

@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/go-chi/chi/v5"
 	"go-service-template/config"
-	"go-service-template/log"
+	"go-service-template/monitor"
 	"net/http"
 	"os"
 	"os/signal"
@@ -42,7 +42,7 @@ func CreateWebServer(
 
 func handleGracefulShutdown(serverCtx context.Context, serverCancelFn context.CancelFunc, server *http.Server) {
 	fnName := "handleGracefulShutdown"
-	shutdownLog := log.GetStdLogger("gracefulShutdown")
+	shutdownLog := monitor.GetStdLogger("gracefulShutdown")
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c,
@@ -59,8 +59,8 @@ func handleGracefulShutdown(serverCtx context.Context, serverCancelFn context.Ca
 	defer shutdownCancelFn()
 
 	// Flush any buffered logs and traces
-	log.FlushLogger()
-	log.FlushTracerProvider(shutdownCtx)
+	monitor.FlushLogger()
+	monitor.FlushTracerProvider(shutdownCtx)
 
 	// Trigger graceful shutdown
 	err := server.Shutdown(shutdownCtx)

@@ -10,13 +10,14 @@ import (
 	"go-service-template/domain/dto"
 	"go-service-template/domain/googlemaps"
 	"go-service-template/mocks"
+	"go-service-template/monitor"
 	"go-service-template/services"
 	"go-service-template/utils"
 	"testing"
 )
 
 var (
-	testCtx       = domain.CreateAppContext(context.Background(), "")
+	testCtx       = monitor.CreateAppContext(context.Background(), "")
 	createLocData = dto.CreateLocationRequest{
 		SupplierID:     1,
 		Name:           "New Name",

@@ -1,4 +1,4 @@
-package log
+package monitor
 
 import (
 	"go-service-template/config"

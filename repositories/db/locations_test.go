@@ -9,13 +9,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"go-service-template/domain"
+	"go-service-template/monitor"
 	"go-service-template/utils"
 	"log"
 	"testing"
 )
 
 var (
-	mockCtx  = domain.CreateAppContext(context.Background(), "")
+	mockCtx  = monitor.CreateAppContext(context.Background(), "")
 	location = domain.Location{
 		ID:   uuid.New().String(),
 		Name: "New test location deactivated",

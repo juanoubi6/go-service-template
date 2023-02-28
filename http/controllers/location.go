@@ -9,14 +9,14 @@ import (
 	"go-service-template/domain/dto"
 	customHTTP "go-service-template/http"
 	"go-service-template/http/middleware"
-	"go-service-template/log"
+	"go-service-template/monitor"
 	"go-service-template/services"
 	"go-service-template/utils"
 	"net/http"
 )
 
 type LocationController struct {
-	logger          log.StdLogger
+	logger          monitor.StdLogger
 	locationService services.ILocationService
 	validator       *validator.Validate
 }
@@ -24,7 +24,7 @@ type LocationController struct {
 func NewLocationController(locService services.ILocationService, validator *validator.Validate) *LocationController {
 	return &LocationController{
 		locationService: locService,
-		logger:          log.GetStdLogger("LocationController"),
+		logger:          monitor.GetStdLogger("LocationController"),
 		validator:       validator,
 	}
 }

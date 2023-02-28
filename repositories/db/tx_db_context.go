@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/pkg/errors"
-	"go-service-template/domain"
+	"go-service-template/monitor"
 	"go-service-template/repositories"
 )
 
@@ -32,7 +32,7 @@ func (txDb *TxDBContext) StartTx() error {
 	return nil
 }
 
-func (txDb *TxDBContext) Exec(ctx domain.ApplicationContext, query string, args ...interface{}) (sql.Result, error) {
+func (txDb *TxDBContext) Exec(ctx monitor.ApplicationContext, query string, args ...interface{}) (sql.Result, error) {
 	var err error
 	var res sql.Result
 	var prepStmt *sql.Stmt
@@ -104,7 +104,7 @@ func (txDb *TxDBContext) getDBReader() repositories.DBReader {
 	return txDb.db
 }
 
-func (txDb *TxDBContext) WithTx(ctx domain.ApplicationContext, fn func(fnCtx domain.ApplicationContext) error) error {
+func (txDb *TxDBContext) WithTx(ctx monitor.ApplicationContext, fn func(fnCtx monitor.ApplicationContext) error) error {
 	var err error
 
 	if err = txDb.StartTx(); err != nil {

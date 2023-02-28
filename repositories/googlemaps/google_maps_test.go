@@ -5,10 +5,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"go-service-template/domain"
 	"go-service-template/domain/googlemaps"
 	customHTTP "go-service-template/http"
 	"go-service-template/mocks"
+	"go-service-template/monitor"
 	googleMapsRepo "go-service-template/repositories/googlemaps"
 	"go-service-template/utils"
 	"net/http"
@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	mockCtx     = domain.CreateAppContext(context.Background(), "")
+	mockCtx     = monitor.CreateAppContext(context.Background(), "")
 	mockRequest = googlemaps.AddressValidationRequest{}
 )
 

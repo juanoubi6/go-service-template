@@ -7,8 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"go-service-template/config"
-	"go-service-template/domain"
-	"go-service-template/log"
+	"go-service-template/monitor"
 	"go-service-template/utils"
 	"io"
 	"net"
@@ -26,9 +25,9 @@ const (
 )
 
 type CustomHTTPClient interface {
-	Do(ctx domain.ApplicationContext, requestValues RequestValues) (CustomHTTPResponse, error)
+	Do(ctx monitor.ApplicationContext, requestValues RequestValues) (CustomHTTPResponse, error)
 	DoWithRetry(
-		ctx domain.ApplicationContext,
+		ctx monitor.ApplicationContext,
 		requestValues RequestValues,
 		timeout time.Duration,
 		retryAmount int,
@@ -52,7 +51,7 @@ type BasicAuth struct {
 
 type CustomClient struct {
 	baseClient *http.Client
-	logger     log.AppLogger
+	logger     monitor.AppLogger
 }
 
 type CustomHTTPResponse struct {
@@ -67,7 +66,7 @@ func CreateCustomHTTPClient(cfg config.HTTPClientConfig) *CustomClient {
 
 	return &CustomClient{
 		baseClient: baseHTTPClient,
-		logger:     log.GetStdLogger("CustomHTTPClient"),
+		logger:     monitor.GetStdLogger("CustomHTTPClient"),
 	}
 }
 
@@ -97,7 +96,7 @@ func buildClient(cfg config.HTTPClientConfig) *http.Client {
 	}
 }
 
-func (cli *CustomClient) Do(ctx domain.ApplicationContext, requestValues RequestValues) (CustomHTTPResponse, error) {
+func (cli *CustomClient) Do(ctx monitor.ApplicationContext, requestValues RequestValues) (CustomHTTPResponse, error) {
 	fnName := "Do"
 	cid := ctx.GetCorrelationID()
 
@@ -116,7 +115,7 @@ func (cli *CustomClient) Do(ctx domain.ApplicationContext, requestValues Request
 }
 
 func (cli *CustomClient) DoWithRetry(
-	ctx domain.ApplicationContext,
+	ctx monitor.ApplicationContext,
 	requestValues RequestValues,
 	timeout time.Duration,
 	retryAmount int,
@@ -199,16 +198,16 @@ func (cli *CustomClient) handleResponse(
 	}
 
 	cli.logger.Info(functionName, cid, "HTTP request successful",
-		log.LoggingParam{
+		monitor.LoggingParam{
 			Name: "url", Value: response.Request.URL.RawQuery,
 		},
-		log.LoggingParam{
+		monitor.LoggingParam{
 			Name: "status_code", Value: response.StatusCode,
 		},
 	)
 
 	cli.logger.Debug(functionName, cid, "HTTP request body",
-		log.LoggingParam{
+		monitor.LoggingParam{
 			Name: "response_body", Value: string(customResponse.BodyPayload),
 		},
 	)
@@ -216,7 +215,7 @@ func (cli *CustomClient) handleResponse(
 	return customResponse, nil
 }
 
-func (cli *CustomClient) buildHTTPRequest(ctx domain.ApplicationContext, rv RequestValues) (*http.Request, error) {
+func (cli *CustomClient) buildHTTPRequest(ctx monitor.ApplicationContext, rv RequestValues) (*http.Request, error) {
 	var body io.Reader = http.NoBody
 
 	// If body is not nil, create new body

@@ -6,7 +6,7 @@ import (
 	"go-service-template/domain"
 	"go-service-template/domain/dto"
 	"go-service-template/domain/googlemaps"
-	"go-service-template/log"
+	"go-service-template/monitor"
 	"go-service-template/repositories"
 	"strings"
 )
@@ -16,20 +16,20 @@ const (
 )
 
 type LocationService struct {
-	logger        log.StdLogger
+	logger        monitor.StdLogger
 	dbFactory     repositories.DatabaseFactory
 	googleMapsAPI repositories.GoogleMapsAPI
 }
 
 func NewLocationService(dbFactory repositories.DatabaseFactory, googleMapsAPI repositories.GoogleMapsAPI) *LocationService {
 	return &LocationService{
-		logger:        log.GetStdLogger("LocationService"),
+		logger:        monitor.GetStdLogger("LocationService"),
 		dbFactory:     dbFactory,
 		googleMapsAPI: googleMapsAPI,
 	}
 }
 
-func (s *LocationService) CreateLocation(ctx domain.ApplicationContext, newLocationData dto.CreateLocationRequest) (location domain.Location, err error) {
+func (s *LocationService) CreateLocation(ctx monitor.ApplicationContext, newLocationData dto.CreateLocationRequest) (location domain.Location, err error) {
 	fnName := "CreateLocation"
 
 	newLocation, err := s.buildNewLocation(ctx, newLocationData)
@@ -56,7 +56,7 @@ func (s *LocationService) CreateLocation(ctx domain.ApplicationContext, newLocat
 		return location, errVal
 	}
 
-	if err = db.WithTx(ctx, func(ctx domain.ApplicationContext) error {
+	if err = db.WithTx(ctx, func(ctx monitor.ApplicationContext) error {
 		var txErr error
 
 		// Create the location
@@ -78,7 +78,7 @@ func (s *LocationService) CreateLocation(ctx domain.ApplicationContext, newLocat
 	return newLocation, nil
 }
 
-func (s *LocationService) UpdateLocation(ctx domain.ApplicationContext, updatedLocationData dto.UpdateLocationRequest) (location domain.Location, err error) {
+func (s *LocationService) UpdateLocation(ctx monitor.ApplicationContext, updatedLocationData dto.UpdateLocationRequest) (location domain.Location, err error) {
 	fnName := "UpdateLocation"
 
 	db, err := s.dbFactory.GetLocationsDB()
@@ -88,7 +88,7 @@ func (s *LocationService) UpdateLocation(ctx domain.ApplicationContext, updatedL
 
 	var existingLocation *domain.Location
 
-	if err = db.WithTx(ctx, func(ctx domain.ApplicationContext) error {
+	if err = db.WithTx(ctx, func(ctx monitor.ApplicationContext) error {
 		var txErr error
 
 		// Retrieve existing location
@@ -126,7 +126,7 @@ func (s *LocationService) UpdateLocation(ctx domain.ApplicationContext, updatedL
 	return *existingLocation, nil
 }
 
-func (s *LocationService) GetLocationByID(ctx domain.ApplicationContext, id string) (*domain.Location, error) {
+func (s *LocationService) GetLocationByID(ctx monitor.ApplicationContext, id string) (*domain.Location, error) {
 	db, err := s.dbFactory.GetLocationsDB()
 	if err != nil {
 		return nil, err
@@ -135,7 +135,7 @@ func (s *LocationService) GetLocationByID(ctx domain.ApplicationContext, id stri
 	return db.GetLocationByID(ctx, id)
 }
 
-func (s *LocationService) GetPaginatedLocations(ctx domain.ApplicationContext, filters domain.LocationsFilters) (page domain.CursorPage[domain.Location], err error) {
+func (s *LocationService) GetPaginatedLocations(ctx monitor.ApplicationContext, filters domain.LocationsFilters) (page domain.CursorPage[domain.Location], err error) {
 	fnName := "GetPaginatedLocations"
 
 	db, err := s.dbFactory.GetLocationsDB()
@@ -152,7 +152,7 @@ func (s *LocationService) GetPaginatedLocations(ctx domain.ApplicationContext, f
 	return page, nil
 }
 
-func (s *LocationService) buildNewLocation(ctx domain.ApplicationContext, data dto.CreateLocationRequest) (domain.Location, error) {
+func (s *LocationService) buildNewLocation(ctx monitor.ApplicationContext, data dto.CreateLocationRequest) (domain.Location, error) {
 	supplierName := SupplierMap[data.SupplierID]
 	locationTypeName := LocationTypeMap[data.LocationTypeID]
 
@@ -169,7 +169,7 @@ func (s *LocationService) buildNewLocation(ctx domain.ApplicationContext, data d
 	}
 
 	if validatedAddress == nil {
-		s.logger.Warn("buildNewLocation", ctx.GetCorrelationID(), "failed to validate address", log.LoggingParam{Name: "address_data", Value: data})
+		s.logger.Warn("buildNewLocation", ctx.GetCorrelationID(), "failed to validate address", monitor.LoggingParam{Name: "address_data", Value: data})
 		return domain.Location{}, domain.AddressNotValidErr{Msg: "the address information does not correspond to a valid address"}
 	}
 
@@ -207,7 +207,7 @@ func (s *LocationService) buildDefaultSubLocationForLocation(location domain.Loc
 }
 
 func (s *LocationService) updateLocation(
-	ctx domain.ApplicationContext,
+	ctx monitor.ApplicationContext,
 	db repositories.LocationsDB,
 	location *domain.Location,
 	updateData dto.UpdateLocationRequest,
@@ -225,7 +225,7 @@ func (s *LocationService) updateLocation(
 	}
 
 	if validatedAddress == nil {
-		s.logger.Warn("updateLocation", ctx.GetCorrelationID(), "failed to validate address", log.LoggingParam{Name: "address_data", Value: updateData})
+		s.logger.Warn("updateLocation", ctx.GetCorrelationID(), "failed to validate address", monitor.LoggingParam{Name: "address_data", Value: updateData})
 		return domain.AddressNotValidErr{Msg: "the address information does not correspond to a valid address"}
 	}
 

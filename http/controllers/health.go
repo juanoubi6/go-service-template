@@ -3,17 +3,17 @@ package controllers
 import (
 	customHTTP "go-service-template/http"
 	"go-service-template/http/middleware"
-	"go-service-template/log"
+	"go-service-template/monitor"
 	"net/http"
 )
 
 type HealthController struct {
-	logger log.AppLogger
+	logger monitor.AppLogger
 }
 
 func NewHealthController() *HealthController {
 	return &HealthController{
-		logger: log.GetStdLogger("Health Controller"),
+		logger: monitor.GetStdLogger("Health Controller"),
 	}
 }
 

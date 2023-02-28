@@ -5,6 +5,7 @@ import (
 	"fmt"
 	sq "github.com/Masterminds/squirrel"
 	"go-service-template/domain"
+	"go-service-template/monitor"
 )
 
 type LocationsDAL struct {
@@ -12,7 +13,7 @@ type LocationsDAL struct {
 	*TxDBContext
 }
 
-func (dal *LocationsDAL) CreateLocation(ctx domain.ApplicationContext, location domain.Location) error {
+func (dal *LocationsDAL) CreateLocation(ctx monitor.ApplicationContext, location domain.Location) error {
 	_, err := dal.Exec(
 		ctx,
 		InsertLocation,
@@ -48,7 +49,7 @@ func (dal *LocationsDAL) CreateLocation(ctx domain.ApplicationContext, location 
 	return nil
 }
 
-func (dal *LocationsDAL) UpdateLocation(ctx domain.ApplicationContext, location domain.Location) error {
+func (dal *LocationsDAL) UpdateLocation(ctx monitor.ApplicationContext, location domain.Location) error {
 	_, err := dal.Exec(
 		ctx,
 		UpdateLocation,
@@ -83,7 +84,7 @@ func (dal *LocationsDAL) UpdateLocation(ctx domain.ApplicationContext, location 
 	return nil
 }
 
-func (dal *LocationsDAL) CreateSubLocation(ctx domain.ApplicationContext, subLocation domain.SubLocation) error {
+func (dal *LocationsDAL) CreateSubLocation(ctx monitor.ApplicationContext, subLocation domain.SubLocation) error {
 	_, err := dal.Exec(
 		ctx,
 		InsertSubLocation,
@@ -97,11 +98,11 @@ func (dal *LocationsDAL) CreateSubLocation(ctx domain.ApplicationContext, subLoc
 	return err
 }
 
-func (dal *LocationsDAL) GetLocationByID(ctx domain.ApplicationContext, id string) (*domain.Location, error) {
+func (dal *LocationsDAL) GetLocationByID(ctx monitor.ApplicationContext, id string) (*domain.Location, error) {
 	return dal.parseLocationFromRow(dal.getDBReader().QueryRowContext(ctx, GetLocationByID, id))
 }
 
-func (dal *LocationsDAL) CheckLocationNameExistence(ctx domain.ApplicationContext, name string) (bool, error) {
+func (dal *LocationsDAL) CheckLocationNameExistence(ctx monitor.ApplicationContext, name string) (bool, error) {
 	var locationID string
 
 	if err := dal.getDBReader().QueryRowContext(ctx, CheckLocationNameExistence, name).Scan(&locationID); err != nil {
@@ -116,7 +117,7 @@ func (dal *LocationsDAL) CheckLocationNameExistence(ctx domain.ApplicationContex
 }
 
 // nolint
-func (dal *LocationsDAL) GetPaginatedLocations(ctx domain.ApplicationContext, filters domain.LocationsFilters) (domain.CursorPage[domain.Location], error) {
+func (dal *LocationsDAL) GetPaginatedLocations(ctx monitor.ApplicationContext, filters domain.LocationsFilters) (domain.CursorPage[domain.Location], error) {
 	var result domain.CursorPage[domain.Location]
 
 	// Build base query

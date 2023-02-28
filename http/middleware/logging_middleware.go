@@ -3,7 +3,7 @@ package middleware
 import (
 	"fmt"
 	customHTTP "go-service-template/http"
-	"go-service-template/log"
+	"go-service-template/monitor"
 	"net/http"
 	"time"
 )
@@ -35,7 +35,7 @@ func (rw *responseWriter) WriteHeader(code int) {
 }
 
 func CreateLoggingMiddleware() customHTTP.Middleware {
-	logger := log.GetStdLogger("LoggingMiddleware")
+	logger := monitor.GetStdLogger("LoggingMiddleware")
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			if r.RequestURI == "/health" {
@@ -52,7 +52,7 @@ func CreateLoggingMiddleware() customHTTP.Middleware {
 				"LoggingMiddleware",
 				appCtx.GetCorrelationID(),
 				fmt.Sprintf("Request to %v ended with status %v", r.URL.EscapedPath(), wrapped.status),
-				log.LoggingParam{
+				monitor.LoggingParam{
 					Name: "request_metadata",
 					Value: map[string]interface{}{
 						"http_status": wrapped.status,

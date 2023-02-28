@@ -5,6 +5,7 @@ package mocks
 import (
 	"fmt"
 	domain "go-service-template/domain"
+	"go-service-template/monitor"
 
 	mock "github.com/stretchr/testify/mock"
 
@@ -17,18 +18,18 @@ type LocationsDB struct {
 }
 
 // CheckLocationNameExistence provides a mock function with given fields: ctx, name
-func (_m *LocationsDB) CheckLocationNameExistence(ctx domain.ApplicationContext, name string) (bool, error) {
+func (_m *LocationsDB) CheckLocationNameExistence(ctx monitor.ApplicationContext, name string) (bool, error) {
 	ret := _m.Called(ctx, name)
 
 	var r0 bool
-	if rf, ok := ret.Get(0).(func(domain.ApplicationContext, string) bool); ok {
+	if rf, ok := ret.Get(0).(func(monitor.ApplicationContext, string) bool); ok {
 		r0 = rf(ctx, name)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(domain.ApplicationContext, string) error); ok {
+	if rf, ok := ret.Get(1).(func(monitor.ApplicationContext, string) error); ok {
 		r1 = rf(ctx, name)
 	} else {
 		r1 = ret.Error(1)
@@ -52,11 +53,11 @@ func (_m *LocationsDB) CommitTx() error {
 }
 
 // CreateLocation provides a mock function with given fields: ctx, location
-func (_m *LocationsDB) CreateLocation(ctx domain.ApplicationContext, location domain.Location) error {
+func (_m *LocationsDB) CreateLocation(ctx monitor.ApplicationContext, location domain.Location) error {
 	ret := _m.Called(ctx, location)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(domain.ApplicationContext, domain.Location) error); ok {
+	if rf, ok := ret.Get(0).(func(monitor.ApplicationContext, domain.Location) error); ok {
 		r0 = rf(ctx, location)
 	} else {
 		r0 = ret.Error(0)
@@ -66,11 +67,11 @@ func (_m *LocationsDB) CreateLocation(ctx domain.ApplicationContext, location do
 }
 
 // CreateSubLocation provides a mock function with given fields: ctx, subLocation
-func (_m *LocationsDB) CreateSubLocation(ctx domain.ApplicationContext, subLocation domain.SubLocation) error {
+func (_m *LocationsDB) CreateSubLocation(ctx monitor.ApplicationContext, subLocation domain.SubLocation) error {
 	ret := _m.Called(ctx, subLocation)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(domain.ApplicationContext, domain.SubLocation) error); ok {
+	if rf, ok := ret.Get(0).(func(monitor.ApplicationContext, domain.SubLocation) error); ok {
 		r0 = rf(ctx, subLocation)
 	} else {
 		r0 = ret.Error(0)
@@ -80,14 +81,14 @@ func (_m *LocationsDB) CreateSubLocation(ctx domain.ApplicationContext, subLocat
 }
 
 // Exec provides a mock function with given fields: ctx, stmt, fields
-func (_m *LocationsDB) Exec(ctx domain.ApplicationContext, stmt string, fields ...interface{}) (sql.Result, error) {
+func (_m *LocationsDB) Exec(ctx monitor.ApplicationContext, stmt string, fields ...interface{}) (sql.Result, error) {
 	var _ca []interface{}
 	_ca = append(_ca, ctx, stmt)
 	_ca = append(_ca, fields...)
 	ret := _m.Called(_ca...)
 
 	var r0 sql.Result
-	if rf, ok := ret.Get(0).(func(domain.ApplicationContext, string, ...interface{}) sql.Result); ok {
+	if rf, ok := ret.Get(0).(func(monitor.ApplicationContext, string, ...interface{}) sql.Result); ok {
 		r0 = rf(ctx, stmt, fields...)
 	} else {
 		if ret.Get(0) != nil {
@@ -96,7 +97,7 @@ func (_m *LocationsDB) Exec(ctx domain.ApplicationContext, stmt string, fields .
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(domain.ApplicationContext, string, ...interface{}) error); ok {
+	if rf, ok := ret.Get(1).(func(monitor.ApplicationContext, string, ...interface{}) error); ok {
 		r1 = rf(ctx, stmt, fields...)
 	} else {
 		r1 = ret.Error(1)
@@ -106,11 +107,11 @@ func (_m *LocationsDB) Exec(ctx domain.ApplicationContext, stmt string, fields .
 }
 
 // GetLocationByID provides a mock function with given fields: ctx, id
-func (_m *LocationsDB) GetLocationByID(ctx domain.ApplicationContext, id string) (*domain.Location, error) {
+func (_m *LocationsDB) GetLocationByID(ctx monitor.ApplicationContext, id string) (*domain.Location, error) {
 	ret := _m.Called(ctx, id)
 
 	var r0 *domain.Location
-	if rf, ok := ret.Get(0).(func(domain.ApplicationContext, string) *domain.Location); ok {
+	if rf, ok := ret.Get(0).(func(monitor.ApplicationContext, string) *domain.Location); ok {
 		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
@@ -119,7 +120,7 @@ func (_m *LocationsDB) GetLocationByID(ctx domain.ApplicationContext, id string)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(domain.ApplicationContext, string) error); ok {
+	if rf, ok := ret.Get(1).(func(monitor.ApplicationContext, string) error); ok {
 		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
@@ -129,18 +130,18 @@ func (_m *LocationsDB) GetLocationByID(ctx domain.ApplicationContext, id string)
 }
 
 // GetPaginatedLocations provides a mock function with given fields: ctx, filters
-func (_m *LocationsDB) GetPaginatedLocations(ctx domain.ApplicationContext, filters domain.LocationsFilters) (domain.CursorPage[domain.Location], error) {
+func (_m *LocationsDB) GetPaginatedLocations(ctx monitor.ApplicationContext, filters domain.LocationsFilters) (domain.CursorPage[domain.Location], error) {
 	ret := _m.Called(ctx, filters)
 
 	var r0 domain.CursorPage[domain.Location]
-	if rf, ok := ret.Get(0).(func(domain.ApplicationContext, domain.LocationsFilters) domain.CursorPage[domain.Location]); ok {
+	if rf, ok := ret.Get(0).(func(monitor.ApplicationContext, domain.LocationsFilters) domain.CursorPage[domain.Location]); ok {
 		r0 = rf(ctx, filters)
 	} else {
 		r0 = ret.Get(0).(domain.CursorPage[domain.Location])
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(domain.ApplicationContext, domain.LocationsFilters) error); ok {
+	if rf, ok := ret.Get(1).(func(monitor.ApplicationContext, domain.LocationsFilters) error); ok {
 		r1 = rf(ctx, filters)
 	} else {
 		r1 = ret.Error(1)
@@ -192,11 +193,11 @@ func (_m *LocationsDB) StartTx() error {
 }
 
 // UpdateLocation provides a mock function with given fields: ctx, location
-func (_m *LocationsDB) UpdateLocation(ctx domain.ApplicationContext, location domain.Location) error {
+func (_m *LocationsDB) UpdateLocation(ctx monitor.ApplicationContext, location domain.Location) error {
 	ret := _m.Called(ctx, location)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(domain.ApplicationContext, domain.Location) error); ok {
+	if rf, ok := ret.Get(0).(func(monitor.ApplicationContext, domain.Location) error); ok {
 		r0 = rf(ctx, location)
 	} else {
 		r0 = ret.Error(0)
@@ -206,7 +207,7 @@ func (_m *LocationsDB) UpdateLocation(ctx domain.ApplicationContext, location do
 }
 
 // WithTx provides a mock function with given fields: ctx, fn
-func (_m *LocationsDB) WithTx(ctx domain.ApplicationContext, fn func(domain.ApplicationContext) error) error {
+func (_m *LocationsDB) WithTx(ctx monitor.ApplicationContext, fn func(monitor.ApplicationContext) error) error {
 	err := _m.StartTx()
 	if err != nil {
 		return err

@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"go-service-template/config"
-	"go-service-template/domain"
 	customHTTP "go-service-template/http"
+	"go-service-template/monitor"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -16,7 +16,7 @@ import (
 )
 
 var timesExecuted int
-var mockCtx = domain.CreateAppContext(context.Background(), "")
+var mockCtx = monitor.CreateAppContext(context.Background(), "")
 
 type MockBody struct {
 	SomeKey string `json:"some_key"`

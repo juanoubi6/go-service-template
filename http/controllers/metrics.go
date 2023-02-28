@@ -3,17 +3,17 @@ package controllers
 import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	customHTTP "go-service-template/http"
-	"go-service-template/log"
+	"go-service-template/monitor"
 	"net/http"
 )
 
 type MetricsController struct {
-	logger log.AppLogger
+	logger monitor.AppLogger
 }
 
 func NewMetricsController() *MetricsController {
 	return &MetricsController{
-		logger: log.GetStdLogger("Metrics Controller"),
+		logger: monitor.GetStdLogger("Metrics Controller"),
 	}
 }
 
