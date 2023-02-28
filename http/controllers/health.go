@@ -34,7 +34,7 @@ func (hc *HealthController) HealthEndpoint() customHTTP.Endpoint {
 func (hc *HealthController) health(writer http.ResponseWriter, r *http.Request) {
 	appCtx := middleware.GetAppContext(r)
 
-	err := SendSuccessResponse(writer, "Service is healthy", http.StatusOK)
+	err := sendSuccessResponse(writer, "Service is healthy", http.StatusOK)
 	if err != nil {
 		hc.logger.Error("Health", appCtx.GetCorrelationID(), "unable to send response", err)
 		return

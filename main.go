@@ -7,6 +7,7 @@ package main
 
 import (
 	"github.com/go-chi/chi/middleware"
+	"github.com/go-playground/validator/v10"
 	"go-service-template/config"
 	_ "go-service-template/docs"
 	customHTTP "go-service-template/http"
@@ -26,6 +27,7 @@ func main() {
 
 	// Create support structures
 	customHTTPClient := customHTTP.CreateCustomHTTPClient(appCfg.HTTPClientConfig)
+	structValidator := validator.New()
 
 	// Create repositories
 	dalFactory := db.NewDALFactory(appCfg.DBConfig)
@@ -38,7 +40,7 @@ func main() {
 	healthDBController := controllers.NewHealthController()
 	metricsController := controllers.NewMetricsController()
 	swaggerController := controllers.NewSwaggerController()
-	locationsController := controllers.NewLocationController(locationService)
+	locationsController := controllers.NewLocationController(locationService, structValidator)
 
 	customHTTP.CreateWebServer(
 		appCfg.AppConfig,

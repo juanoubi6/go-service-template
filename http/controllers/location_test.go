@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -28,6 +29,35 @@ const (
 	CursorVal = "Value"
 )
 
+var (
+	mockCreateLocationRequest = dto.CreateLocationRequest{
+		SupplierID:     1,
+		Name:           "someName",
+		Address:        "Address",
+		City:           "City",
+		State:          "State",
+		Zipcode:        "Zipcode",
+		LocationTypeID: 1,
+		ContactPerson:  nil,
+		PhoneNumber:    nil,
+		Email:          nil,
+	}
+	mockUpdateLocationRequest = dto.UpdateLocationRequest{
+		ID:             uuid.New().String(),
+		SupplierID:     1,
+		Name:           "newName",
+		Address:        "newAddress",
+		City:           "newCity",
+		State:          "newState",
+		Zipcode:        "newZipcode",
+		LocationTypeID: 1,
+		ContactPerson:  nil,
+		PhoneNumber:    nil,
+		Email:          nil,
+		Active:         false,
+	}
+)
+
 type LocationControllerSuite struct {
 	suite.Suite
 	locationServiceMock     *mocks.ILocationService
@@ -39,7 +69,7 @@ type LocationControllerSuite struct {
 
 func (s *LocationControllerSuite) SetupTest() {
 	locationServiceMock := new(mocks.ILocationService)
-	controller := controllers.NewLocationController(locationServiceMock)
+	controller := controllers.NewLocationController(locationServiceMock, validator.New())
 
 	s.createLocationEP = controller.CreateLocationEndpoint()
 	s.updateLocationEP = controller.UpdateLocationEndpoint()
@@ -59,7 +89,7 @@ func TestLocationControllerSuite(t *testing.T) {
 func (s *LocationControllerSuite) Test_createLocation_Success() {
 	w := httptest.NewRecorder()
 
-	bodyBytes, _ := json.Marshal(dto.CreateLocationRequest{Name: "someName"})
+	bodyBytes, _ := json.Marshal(mockCreateLocationRequest)
 
 	req, _ := http.NewRequest(http.MethodPost, "/v1/locations", bytes.NewBuffer(bodyBytes))
 
@@ -97,8 +127,8 @@ func (s *LocationControllerSuite) Test_createLocation_Returns400OnInvalidBody() 
 func (s *LocationControllerSuite) Test_updateLocation_Success() {
 	w := httptest.NewRecorder()
 
-	bodyBytes, _ := json.Marshal(dto.UpdateLocationRequest{ID: "uuid1"})
-	req, _ := http.NewRequest(http.MethodPut, "/v1/locations/uuid1", bytes.NewBuffer(bodyBytes))
+	bodyBytes, _ := json.Marshal(mockUpdateLocationRequest)
+	req, _ := http.NewRequest(http.MethodPut, fmt.Sprintf("/v1/locations/%v", mockUpdateLocationRequest.ID), bytes.NewBuffer(bodyBytes))
 
 	s.locationServiceMock.On("UpdateLocation", mock.Anything, mock.Anything).Return(domain.Location{ID: "1"}, nil)
 

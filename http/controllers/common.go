@@ -3,8 +3,10 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/go-playground/validator/v10"
 	"go-service-template/domain"
 	"go-service-template/utils"
+	"io"
 	"net/http"
 	"strconv"
 )
@@ -23,7 +25,7 @@ type APIResponse struct {
 }
 
 type APIError struct {
-	Type          string   `json:"type"`
+	Type          string   `json:"type,omitempty"`
 	Title         string   `json:"title"`
 	Details       []Detail `json:"details"`
 	CorrelationID string   `json:"correlation_id"`
@@ -31,10 +33,10 @@ type APIError struct {
 
 type Detail struct {
 	Message string            `json:"message"`
-	Meta    map[string]string `json:"metadata"`
+	Meta    map[string]string `json:"metadata,omitempty"`
 }
 
-func SendSuccessResponse(w http.ResponseWriter, payload any, statusCode int) error {
+func sendSuccessResponse(w http.ResponseWriter, payload any, statusCode int) error {
 	response := APIResponse{
 		Data: payload,
 	}
@@ -47,14 +49,12 @@ func SendSuccessResponse(w http.ResponseWriter, payload any, statusCode int) err
 	return nil
 }
 
-func SendFailureResponse(w http.ResponseWriter, statusCode int, err error, title, correlationID string) error {
+func sendFailureResponse(w http.ResponseWriter, statusCode int, err error, title, correlationID string) error {
 	response := APIResponse{
 		Error: &APIError{
 			Title:         title,
 			CorrelationID: correlationID,
-			Details: []Detail{
-				{Message: err.Error()},
-			},
+			Details:       errorDetailsFromError(err),
 		},
 	}
 
@@ -83,7 +83,7 @@ func sendResponse(w http.ResponseWriter, payload any, statusCode int) error {
 	return nil
 }
 
-func HTTPStatusFromError(err error) int {
+func httpStatusFromError(err error) int {
 	switch err.(type) {
 	case domain.NameAlreadyInUseErr, domain.AddressNotValidErr, domain.BusinessErr:
 		return http.StatusBadRequest
@@ -92,21 +92,32 @@ func HTTPStatusFromError(err error) int {
 	}
 }
 
-func buildLocationFilters(req *http.Request) (domain.LocationsFilters, error) {
-	locationFilters := domain.LocationsFilters{}
+func errorDetailsFromError(err error) []Detail {
+	var details []Detail
 
-	cursorPaginationFilters, err := buildCursorPaginationFilters(req)
-	if err != nil {
-		return locationFilters, err
+	switch errT := err.(type) {
+	case validator.ValidationErrors:
+		for _, validationErr := range errT {
+			details = append(details, Detail{Message: validationErr.Error()})
+		}
+	default:
+		details = append(details, Detail{Message: errT.Error()})
 	}
 
-	locationFilters.CursorPaginationFilters = cursorPaginationFilters
+	return details
+}
 
-	if nameVal, ok := req.URL.Query()["name"]; ok {
-		locationFilters.Name = utils.ToPointer[string](nameVal[0])
+func parseAndValidateBody[T any](body io.ReadCloser, v *validator.Validate) (T, error) {
+	var bodyStruct T
+	if err := json.NewDecoder(body).Decode(&bodyStruct); err != nil {
+		return bodyStruct, err
 	}
 
-	return locationFilters, nil
+	if err := v.Struct(bodyStruct); err != nil {
+		return bodyStruct, err
+	}
+
+	return bodyStruct, nil
 }
 
 func buildCursorPaginationFilters(req *http.Request) (domain.CursorPaginationFilters, error) {
