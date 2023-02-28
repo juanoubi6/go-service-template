@@ -27,18 +27,20 @@ func CreateWebServer(
 		router.With(endpoint.Middlewares...).MethodFunc(endpoint.Method, endpoint.Path, endpoint.Handler)
 	}
 
+	serverCtx, serverCtxCancelFn := context.WithCancel(context.Background())
 	server := &http.Server{Addr: appConfig.BindAddress, Handler: router}
 
-	go handleGracefulShutdown(server)
+	go handleGracefulShutdown(server, serverCtx, serverCtxCancelFn)
 
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		panic(err)
 	}
 
-	handleGracefulShutdown(server)
+	// Wait for server context to be stopped
+	<-serverCtx.Done()
 }
 
-func handleGracefulShutdown(server *http.Server) {
+func handleGracefulShutdown(server *http.Server, serverCtx context.Context, serverCancelFn context.CancelFunc) {
 	fnName := "handleGracefulShutdown"
 	shutdownLog := log.GetStdLogger("gracefulShutdown")
 
@@ -53,7 +55,17 @@ func handleGracefulShutdown(server *http.Server) {
 	shutdownLog.Warn(fnName, "", "Shutting down app")
 
 	// Shutdown signal with grace period of 30 seconds
-	shutdownCtx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	shutdownCtx, _ := context.WithTimeout(serverCtx, 30*time.Second)
+
+	go func() {
+		<-shutdownCtx.Done()
+		if shutdownCtx.Err() == context.DeadlineExceeded {
+			panic("graceful shutdown timed out.. forcing exit.")
+		}
+	}()
+
+	// Flush any logs
+	log.FlushLogger()
 
 	// Trigger graceful shutdown
 	err := server.Shutdown(shutdownCtx)
@@ -61,8 +73,5 @@ func handleGracefulShutdown(server *http.Server) {
 		shutdownLog.Error(fnName, "", "failed to shutdown server", err)
 	}
 
-	// Flush any logs
-	log.FlushLogger()
-
-	return
+	serverCancelFn()
 }

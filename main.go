@@ -6,6 +6,7 @@
 package main
 
 import (
+	"github.com/go-chi/chi/middleware"
 	"go-service-template/config"
 	_ "go-service-template/docs"
 	customHTTP "go-service-template/http"
@@ -42,6 +43,7 @@ func main() {
 	customHTTP.CreateWebServer(
 		appCfg.AppConfig,
 		[]customHTTP.Middleware{
+			middleware.Recoverer,
 			httpMiddleware.CreateCorsMiddleware(config.GetCorsOriginAddressByEnv(env)).Handler,
 			httpMiddleware.CreateAppContextMiddleware(),
 			httpMiddleware.CreateLoggingMiddleware(),
