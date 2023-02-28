@@ -1,7 +1,5 @@
 package domain
 
-import "fmt"
-
 const (
 	ReconLocationTypeID       = 1
 	WholesaleLocationTypeID   = 2
@@ -19,10 +17,6 @@ type Location struct {
 	LocationType LocationType        `json:"location_type"`
 	Supplier     Supplier            `json:"supplier"`
 	Active       bool                `json:"active"`
-}
-
-func (l Location) GetFullAddress() string {
-	return fmt.Sprintf("%v, %v, %v %v", l.Information.Address, l.Information.City, l.Information.State, l.Information.Zipcode)
 }
 
 func (l Location) GetUniqueOrderedIdentifier() string {
