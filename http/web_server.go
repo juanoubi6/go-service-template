@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"github.com/go-chi/chi/v5"
 	"go-service-template/config"
 	"go-service-template/log"
@@ -8,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 func CreateWebServer(
@@ -25,14 +27,19 @@ func CreateWebServer(
 		router.With(endpoint.Middlewares...).MethodFunc(endpoint.Method, endpoint.Path, endpoint.Handler)
 	}
 
-	if err := http.ListenAndServe(appConfig.BindAddress, router); err != nil {
+	server := &http.Server{Addr: appConfig.BindAddress, Handler: router}
+
+	go handleGracefulShutdown(server)
+
+	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		panic(err)
 	}
 
-	gracefulShutdown()
+	handleGracefulShutdown(server)
 }
 
-func gracefulShutdown() {
+func handleGracefulShutdown(server *http.Server) {
+	fnName := "handleGracefulShutdown"
 	shutdownLog := log.GetStdLogger("gracefulShutdown")
 
 	c := make(chan os.Signal, 1)
@@ -43,7 +50,16 @@ func gracefulShutdown() {
 		syscall.SIGTERM)
 
 	<-c
-	shutdownLog.Warn("gracefulShutdown", "", "Shutting down app, notifying workers to exit")
+	shutdownLog.Warn(fnName, "", "Shutting down app")
+
+	// Shutdown signal with grace period of 30 seconds
+	shutdownCtx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+
+	// Trigger graceful shutdown
+	err := server.Shutdown(shutdownCtx)
+	if err != nil {
+		shutdownLog.Error(fnName, "", "failed to shutdown server", err)
+	}
 
 	// Flush any logs
 	log.FlushLogger()
