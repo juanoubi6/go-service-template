@@ -18,15 +18,15 @@ const (
 )
 
 type APIResponse struct {
-	ApiError *APIError `json:"error,omitempty"`
-	Data     any       `json:"data,omitempty"`
+	Error *APIError `json:"error,omitempty"`
+	Data  any       `json:"data,omitempty"`
 }
 
 type APIError struct {
 	Type          string   `json:"type"`
 	Title         string   `json:"title"`
 	Details       []Detail `json:"details"`
-	CorrelationId string   `json:"correlation_id"`
+	CorrelationID string   `json:"correlation_id"`
 }
 
 type Detail struct {
@@ -49,9 +49,9 @@ func SendSuccessResponse(w http.ResponseWriter, payload any, statusCode int) err
 
 func SendFailureResponse(w http.ResponseWriter, statusCode int, err error, title, correlationID string) error {
 	response := APIResponse{
-		ApiError: &APIError{
+		Error: &APIError{
 			Title:         title,
-			CorrelationId: correlationID,
+			CorrelationID: correlationID,
 			Details: []Detail{
 				{Message: err.Error()},
 			},

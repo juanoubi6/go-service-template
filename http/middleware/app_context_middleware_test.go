@@ -51,7 +51,7 @@ func CreateTestEndpoint() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		appCtx := GetAppContext(r)
 		if appCtx.GetCorrelationID() != "" {
-			w.Write([]byte(appCtx.GetCorrelationID()))
+			_, _ = w.Write([]byte(appCtx.GetCorrelationID()))
 			w.WriteHeader(200)
 		} else {
 			w.WriteHeader(400)
