@@ -163,7 +163,7 @@ paths:
             items:
               $ref: '#/definitions/domain.ExampleCursorPage'
             type: array
-      summary: GETPaginatedLocationsEndpoint
+      summary: Retrieve paginated locations
     post:
       description: Create a new location and a default sub location
       parameters:
@@ -182,7 +182,7 @@ paths:
             items:
               $ref: '#/definitions/domain.Location'
             type: array
-      summary: POSTCreateLocationEndpoint
+      summary: Create location
   /v1/locations/{locationID}:
     get:
       description: Get location details
@@ -199,7 +199,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/domain.Location'
-      summary: GETLocationDetailsEndpoint
+      summary: Get location details
     put:
       description: Update an existing location
       parameters:
@@ -223,7 +223,7 @@ paths:
             items:
               $ref: '#/definitions/domain.Location'
             type: array
-      summary: PUTUpdateLocationEndpoint
+      summary: Update existing location
 swagger: "2.0"
 tags:
 - description: API endpoints

@@ -35,7 +35,7 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
-                "summary": "GETPaginatedLocationsEndpoint",
+                "summary": "Retrieve paginated locations",
                 "parameters": [
                     {
                         "type": "string",
@@ -80,7 +80,7 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
-                "summary": "POSTCreateLocationEndpoint",
+                "summary": "Create location",
                 "parameters": [
                     {
                         "description": "Location attributes",
@@ -111,7 +111,7 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
-                "summary": "GETLocationDetailsEndpoint",
+                "summary": "Get location details",
                 "parameters": [
                     {
                         "type": "string",
@@ -135,7 +135,7 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
-                "summary": "PUTUpdateLocationEndpoint",
+                "summary": "Update existing location",
                 "parameters": [
                     {
                         "type": "string",
