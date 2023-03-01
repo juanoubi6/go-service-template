@@ -6,7 +6,7 @@ import (
 	"fmt"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/XSAM/otelsql"
-	_ "github.com/lib/pq"
+	_ "github.com/lib/pq" // side effect
 	"github.com/pkg/errors"
 	"go-service-template/config"
 	"go-service-template/monitor"

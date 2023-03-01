@@ -15,8 +15,8 @@ import (
 )
 
 var (
-	mockCtx  = monitor.CreateMockAppContext("")
-	location = domain.Location{
+	mockCtx      = monitor.CreateMockAppContext("")
+	testLocation = domain.Location{
 		ID:   uuid.New().String(),
 		Name: "New test location deactivated",
 		Information: domain.LocationInformation{
@@ -84,28 +84,28 @@ func TestLocationsDALSuiteSuite(t *testing.T) {
 
 func (s *LocationsDALSuite) Test_CreateLocation_Success() {
 	s.sqlMock.ExpectPrepare(InsertLocation).ExpectExec().WithArgs(
-		location.ID,
-		location.Name,
-		location.LocationType.ID,
-		location.Supplier.ID,
-		location.Active,
+		testLocation.ID,
+		testLocation.Name,
+		testLocation.LocationType.ID,
+		testLocation.Supplier.ID,
+		testLocation.Active,
 	).WillReturnResult(sqlmock.NewResult(1, 1))
 
 	s.sqlMock.ExpectPrepare(InsertLocationInformation).ExpectExec().WithArgs(
-		location.Information.ID,
-		location.ID,
-		location.Information.Address,
-		location.Information.City,
-		location.Information.State,
-		location.Information.Zipcode,
-		location.Information.ContactInformation.ContactPerson,
-		location.Information.ContactInformation.PhoneNumber,
-		location.Information.ContactInformation.Email,
-		location.Information.Latitude,
-		location.Information.Longitude,
+		testLocation.Information.ID,
+		testLocation.ID,
+		testLocation.Information.Address,
+		testLocation.Information.City,
+		testLocation.Information.State,
+		testLocation.Information.Zipcode,
+		testLocation.Information.ContactInformation.ContactPerson,
+		testLocation.Information.ContactInformation.PhoneNumber,
+		testLocation.Information.ContactInformation.Email,
+		testLocation.Information.Latitude,
+		testLocation.Information.Longitude,
 	).WillReturnResult(sqlmock.NewResult(1, 1))
 
-	err := s.dal.CreateLocation(mockCtx, location)
+	err := s.dal.CreateLocation(mockCtx, testLocation)
 
 	assert.Nil(s.T(), err)
 	if err = s.sqlMock.ExpectationsWereMet(); err != nil {
@@ -132,27 +132,27 @@ func (s *LocationsDALSuite) Test_CreateSubLocation_Success() {
 
 func (s *LocationsDALSuite) Test_UpdateLocation_Success() {
 	s.sqlMock.ExpectPrepare(UpdateLocation).ExpectExec().WithArgs(
-		location.Name,
-		location.LocationType.ID,
-		location.Supplier.ID,
-		location.Active,
-		location.ID,
+		testLocation.Name,
+		testLocation.LocationType.ID,
+		testLocation.Supplier.ID,
+		testLocation.Active,
+		testLocation.ID,
 	).WillReturnResult(sqlmock.NewResult(1, 1))
 
 	s.sqlMock.ExpectPrepare(UpdateLocationInformation).ExpectExec().WithArgs(
-		location.Information.Address,
-		location.Information.City,
-		location.Information.State,
-		location.Information.Zipcode,
-		location.Information.ContactInformation.ContactPerson,
-		location.Information.ContactInformation.PhoneNumber,
-		location.Information.ContactInformation.Email,
-		location.Information.Latitude,
-		location.Information.Longitude,
-		location.Information.ID,
+		testLocation.Information.Address,
+		testLocation.Information.City,
+		testLocation.Information.State,
+		testLocation.Information.Zipcode,
+		testLocation.Information.ContactInformation.ContactPerson,
+		testLocation.Information.ContactInformation.PhoneNumber,
+		testLocation.Information.ContactInformation.Email,
+		testLocation.Information.Latitude,
+		testLocation.Information.Longitude,
+		testLocation.Information.ID,
 	).WillReturnResult(sqlmock.NewResult(1, 1))
 
-	err := s.dal.UpdateLocation(mockCtx, location)
+	err := s.dal.UpdateLocation(mockCtx, testLocation)
 
 	assert.Nil(s.T(), err)
 	if err = s.sqlMock.ExpectationsWereMet(); err != nil {

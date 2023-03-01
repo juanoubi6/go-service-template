@@ -39,7 +39,7 @@ func RegisterTraceProvider(openTelemetryCfg config.OpenTelemetryConfig, appCfg c
 // about the application.
 func createTracerProvider(openTelemetryCfg config.OpenTelemetryConfig, appCfg config.AppConfig) (*tracesdk.TracerProvider, error) {
 	// Create the Jaeger exporter
-	exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(openTelemetryCfg.CollectorEndpoint)))
+	exporter, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(openTelemetryCfg.CollectorEndpoint)))
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +48,7 @@ func createTracerProvider(openTelemetryCfg config.OpenTelemetryConfig, appCfg co
 
 	tp := tracesdk.NewTracerProvider(
 		// Always be sure to batch in production.
-		tracesdk.WithBatcher(exp),
+		tracesdk.WithBatcher(exporter),
 		// Record information about this application in a Resource.
 		tracesdk.WithResource(resource.NewWithAttributes(
 			semconv.SchemaURL,
