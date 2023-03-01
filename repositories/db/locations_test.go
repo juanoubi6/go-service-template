@@ -1,7 +1,6 @@
 package db
 
 import (
-	"context"
 	"database/sql"
 	"github.com/DATA-DOG/go-sqlmock"
 	sq "github.com/Masterminds/squirrel"
@@ -16,7 +15,7 @@ import (
 )
 
 var (
-	mockCtx  = monitor.CreateAppContext(context.Background(), "")
+	mockCtx  = monitor.CreateMockAppContext("")
 	location = domain.Location{
 		ID:   uuid.New().String(),
 		Name: "New test location deactivated",

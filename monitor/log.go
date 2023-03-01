@@ -74,10 +74,10 @@ func (c StdLogger) Error(function, cid, msg string, err error, params ...Logging
 
 func (c StdLogger) getFields(function, cid string, params []LoggingParam) []zap.Field {
 	fields := []zap.Field{
-		zap.String("function", function),
-		zap.String("object", c.Object),
-		zap.String("app_version", c.AppVersion),
-		zap.String("correlation_id", cid),
+		zap.String(FunctionLogField, function),
+		zap.String(ObjectLogField, c.Object),
+		zap.String(AppVersionLogField, c.AppVersion),
+		zap.String(CorrelationIDField, cid),
 	}
 
 	for _, param := range params {

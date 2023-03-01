@@ -15,7 +15,7 @@ const CorrelationIDHeader = "Correlation-Id"
 func CreateAppContextMiddleware() customHTTP.Middleware {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
-			appCtx := monitor.CreateAppContext(r.Context(), r.Header.Get(CorrelationIDHeader))
+			appCtx := monitor.CreateAppContextFromRequest(r, r.Header.Get(CorrelationIDHeader))
 			r = r.WithContext(context.WithValue(r.Context(), AppContextKey, appCtx))
 			next.ServeHTTP(w, r)
 		}
@@ -30,5 +30,5 @@ func GetAppContext(r *http.Request) *monitor.AppContext {
 		return appCtx
 	}
 
-	return monitor.CreateAppContext(r.Context(), "")
+	return monitor.CreateAppContextFromRequest(r, "")
 }

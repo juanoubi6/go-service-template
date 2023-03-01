@@ -12,6 +12,7 @@ import (
 	"go-service-template/monitor"
 	"go-service-template/services"
 	"go-service-template/utils"
+	"go.opentelemetry.io/otel/codes"
 	"net/http"
 )
 
@@ -157,12 +158,16 @@ func (c *LocationController) updateLocation(w http.ResponseWriter, r *http.Reque
 }
 
 func (c *LocationController) getPaginatedLocations(w http.ResponseWriter, r *http.Request) {
-	fnName := "getPaginatedLocations"
-	appCtx := middleware.GetAppContext(r)
+	fnName := "LocationController.getPaginatedLocations"
+	var appCtx monitor.ApplicationContext = middleware.GetAppContext(r)
+
+	appCtx, span := appCtx.GetRootSpan(fnName)
+	defer span.End()
 
 	filters, err := buildLocationFilters(r)
 	if err != nil {
 		c.logger.Error(fnName, appCtx.GetCorrelationID(), "error building location filters", err)
+		span.SetStatus(codes.Error, err.Error())
 		_ = sendFailureResponse(w, http.StatusBadRequest, err, err.Error(), appCtx.GetCorrelationID())
 		return
 	}
@@ -170,12 +175,14 @@ func (c *LocationController) getPaginatedLocations(w http.ResponseWriter, r *htt
 	locationPage, err := c.locationService.GetPaginatedLocations(appCtx, filters)
 	if err != nil {
 		c.logger.Error(fnName, appCtx.GetCorrelationID(), "failed to get paginated locations", err)
+		span.SetStatus(codes.Error, err.Error())
 		_ = sendFailureResponse(w, httpStatusFromError(err), err, "failed to get paginated locations", appCtx.GetCorrelationID())
 		return
 	}
 
 	err = sendSuccessResponse(w, locationPage, 200)
 	if err != nil {
+		span.SetStatus(codes.Error, err.Error())
 		c.logger.Error(fnName, appCtx.GetCorrelationID(), "error sending API response", err)
 	}
 }

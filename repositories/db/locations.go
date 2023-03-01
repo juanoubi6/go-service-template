@@ -6,6 +6,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"go-service-template/domain"
 	"go-service-template/monitor"
+	"go.opentelemetry.io/otel/codes"
 )
 
 type LocationsDAL struct {
@@ -118,6 +119,9 @@ func (dal *LocationsDAL) CheckLocationNameExistence(ctx monitor.ApplicationConte
 
 // nolint
 func (dal *LocationsDAL) GetPaginatedLocations(ctx monitor.ApplicationContext, filters domain.LocationsFilters) (domain.CursorPage[domain.Location], error) {
+	ctx, span := ctx.StartSpan("LocationsDAL.GetPaginatedLocations")
+	defer span.End()
+
 	var result domain.CursorPage[domain.Location]
 
 	// Build base query
@@ -176,6 +180,7 @@ func (dal *LocationsDAL) GetPaginatedLocations(ctx monitor.ApplicationContext, f
 
 	rows, err := dal.getDBReader().QueryContext(ctx, selectQueryStr, args...)
 	if err != nil {
+		span.SetStatus(codes.Error, err.Error())
 		return result, err
 	}
 	defer rows.Close()
@@ -202,6 +207,7 @@ func (dal *LocationsDAL) GetPaginatedLocations(ctx monitor.ApplicationContext, f
 			&location.Information.Latitude,
 			&location.Information.Longitude,
 		); err != nil {
+			span.SetStatus(codes.Error, err.Error())
 			return result, err
 		}
 		locations = append(locations, location)

@@ -1,7 +1,6 @@
 package http_test
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -16,7 +15,7 @@ import (
 )
 
 var timesExecuted int
-var mockCtx = monitor.CreateAppContext(context.Background(), "")
+var mockCtx = monitor.CreateMockAppContext("")
 
 type MockBody struct {
 	SomeKey string `json:"some_key"`

@@ -8,6 +8,9 @@ import (
 	"go-service-template/domain/googlemaps"
 	"go-service-template/monitor"
 	"go-service-template/repositories"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 	"strings"
 )
 
@@ -136,15 +139,20 @@ func (s *LocationService) GetLocationByID(ctx monitor.ApplicationContext, id str
 }
 
 func (s *LocationService) GetPaginatedLocations(ctx monitor.ApplicationContext, filters domain.LocationsFilters) (page domain.CursorPage[domain.Location], err error) {
-	fnName := "GetPaginatedLocations"
+	fnName := "LocationService.GetPaginatedLocations"
+
+	ctx, span := ctx.StartSpan(fnName, trace.WithAttributes(attribute.String("filters", filters.ToJSON())))
+	defer span.End()
 
 	db, err := s.dbFactory.GetLocationsDB()
 	if err != nil {
+		span.SetStatus(codes.Error, err.Error())
 		return page, err
 	}
 
 	page, err = db.GetPaginatedLocations(ctx, filters)
 	if err != nil {
+		span.SetStatus(codes.Error, err.Error())
 		s.logger.Error(fnName, ctx.GetCorrelationID(), "failed to retrieve paginated locations", err)
 		return page, err
 	}

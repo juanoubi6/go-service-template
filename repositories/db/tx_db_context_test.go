@@ -1,7 +1,6 @@
 package db
 
 import (
-	"context"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -11,7 +10,7 @@ import (
 	"testing"
 )
 
-var mockContext = monitor.CreateAppContext(context.Background(), "")
+var mockContext = monitor.CreateMockAppContext("")
 
 type TxDBContextSuite struct {
 	suite.Suite

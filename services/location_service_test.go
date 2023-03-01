@@ -1,7 +1,6 @@
 package services_test
 
 import (
-	"context"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -17,7 +16,7 @@ import (
 )
 
 var (
-	testCtx       = monitor.CreateAppContext(context.Background(), "")
+	testCtx       = monitor.CreateMockAppContext("")
 	createLocData = dto.CreateLocationRequest{
 		SupplierID:     1,
 		Name:           "New Name",
@@ -216,7 +215,7 @@ func (s *LocationServiceSuite) Test_GetPaginatedLocations_Success() {
 	filters := domain.LocationsFilters{}
 
 	s.dbFactoryMock.On("GetLocationsDB").Return(s.locationsDBMock, nil)
-	s.locationsDBMock.On("GetPaginatedLocations", testCtx, filters).Return(domain.CursorPage[domain.Location]{}, nil).Once()
+	s.locationsDBMock.On("GetPaginatedLocations", mock.Anything, filters).Return(domain.CursorPage[domain.Location]{}, nil).Once()
 
 	_, err := s.locationService.GetPaginatedLocations(testCtx, domain.LocationsFilters{})
 

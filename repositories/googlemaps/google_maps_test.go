@@ -1,7 +1,6 @@
 package googlemaps_test
 
 import (
-	"context"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -17,7 +16,7 @@ import (
 )
 
 var (
-	mockCtx     = monitor.CreateAppContext(context.Background(), "")
+	mockCtx     = monitor.CreateMockAppContext("")
 	mockRequest = googlemaps.AddressValidationRequest{}
 )
 
