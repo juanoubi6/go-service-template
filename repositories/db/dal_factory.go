@@ -5,12 +5,13 @@ import (
 	"database/sql"
 	"fmt"
 	sq "github.com/Masterminds/squirrel"
-	"github.com/lib/pq"
+	"github.com/XSAM/otelsql"
+	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
 	"go-service-template/config"
 	"go-service-template/monitor"
 	"go-service-template/repositories"
-	sqlTrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/database/sql"
+	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 	"regexp"
 	"time"
 )
@@ -57,13 +58,18 @@ func connectDB(connString string, dbConfig config.DBConfig) (*sql.DB, error) {
 	}
 
 	uri := connString
-	driver := &pq.Driver{}
 
-	// Use DataDog tracer to register all SQL queries
-	sqlTrace.Register(driverName, driver, sqlTrace.WithServiceName(config.ServiceConf.AppConfig.Name), sqlTrace.WithAnalytics(true))
-	dbPtr, err := sqlTrace.Open(driverName, uri)
+	// Use OTEL to register query traces
+	dbPtr, err := otelsql.Open(driverName, uri)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to %s database: %s", driverName, err)
+	}
+
+	err = otelsql.RegisterDBStatsMetrics(dbPtr, otelsql.WithAttributes(
+		semconv.DBSystemPostgreSQL,
+	))
+	if err != nil {
+		return nil, err
 	}
 
 	dbPtr.SetMaxOpenConns(dbConfig.ConnMaxIdleTime)
