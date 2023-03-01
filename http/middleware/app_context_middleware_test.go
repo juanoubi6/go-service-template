@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"net/http"
@@ -10,13 +11,15 @@ import (
 
 type AppContextMiddlewareSuite struct {
 	suite.Suite
-	appContextMiddleware func(http.Handler) http.Handler
-	testEndpoint         http.Handler
+	appContextMiddleware echo.MiddlewareFunc
+	testEndpoint         echo.HandlerFunc
+	echoRouter           *echo.Echo
 }
 
 func (sut *AppContextMiddlewareSuite) SetupSuite() {
 	sut.appContextMiddleware = CreateAppContextMiddleware()
 	sut.testEndpoint = CreateTestEndpoint()
+	sut.echoRouter = echo.New()
 }
 
 func TestAppContextMiddlewareSuite(t *testing.T) {
@@ -29,8 +32,9 @@ func (sut *AppContextMiddlewareSuite) Test_AppContextMiddleware_DecoratesRequest
 
 	wrappedTestHandler := sut.appContextMiddleware(sut.testEndpoint)
 
-	wrappedTestHandler.ServeHTTP(res, req)
+	err := wrappedTestHandler(sut.echoRouter.NewContext(req, res))
 
+	assert.Nil(sut.T(), err)
 	assert.Equal(sut.T(), http.StatusOK, res.Code)
 }
 
@@ -41,20 +45,20 @@ func (sut *AppContextMiddlewareSuite) Test_AppContextMiddleware_UsesCorrelationI
 
 	wrappedTestHandler := sut.appContextMiddleware(sut.testEndpoint)
 
-	wrappedTestHandler.ServeHTTP(res, req)
+	err := wrappedTestHandler(sut.echoRouter.NewContext(req, res))
 
+	assert.Nil(sut.T(), err)
 	assert.Equal(sut.T(), http.StatusOK, res.Code)
 	assert.Equal(sut.T(), "value", res.Body.String())
 }
 
-func CreateTestEndpoint() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		appCtx := GetAppContext(r)
+func CreateTestEndpoint() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		appCtx := GetAppContext(c)
 		if appCtx.GetCorrelationID() != "" {
-			_, _ = w.Write([]byte(appCtx.GetCorrelationID()))
-			w.WriteHeader(200)
+			return c.String(http.StatusOK, appCtx.GetCorrelationID())
 		} else {
-			w.WriteHeader(400)
+			return c.String(http.StatusBadRequest, "error")
 		}
 	}
 }

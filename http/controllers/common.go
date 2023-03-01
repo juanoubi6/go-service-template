@@ -36,51 +36,20 @@ type Detail struct {
 	Meta    map[string]string `json:"metadata,omitempty"`
 }
 
-func sendSuccessResponse(w http.ResponseWriter, payload any, statusCode int) error {
-	response := APIResponse{
+func buildSuccessResponse(payload any) APIResponse {
+	return APIResponse{
 		Data: payload,
 	}
-
-	err := sendResponse(w, response, statusCode)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
-func sendFailureResponse(w http.ResponseWriter, statusCode int, err error, title, correlationID string) error {
-	response := APIResponse{
+func buildFailResponse(err error, title, correlationID string) APIResponse {
+	return APIResponse{
 		Error: &APIError{
 			Title:         title,
 			CorrelationID: correlationID,
 			Details:       errorDetailsFromError(err),
 		},
 	}
-
-	err = sendResponse(w, response, statusCode)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func sendResponse(w http.ResponseWriter, payload any, statusCode int) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-
-	bytes, err := json.Marshal(payload)
-	if err != nil {
-		return err
-	}
-
-	_, err = w.Write(bytes)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func httpStatusFromError(err error) int {

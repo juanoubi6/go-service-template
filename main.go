@@ -6,8 +6,9 @@
 package main
 
 import (
-	"github.com/go-chi/chi/middleware"
 	"github.com/go-playground/validator/v10"
+	"github.com/labstack/echo/v4"
+	echoMiddleware "github.com/labstack/echo/v4/middleware"
 	"go-service-template/config"
 	_ "go-service-template/docs"
 	customHTTP "go-service-template/http"
@@ -42,22 +43,21 @@ func main() {
 
 	// Create controllers
 	healthDBController := controllers.NewHealthController()
-	metricsController := controllers.NewMetricsController()
 	swaggerController := controllers.NewSwaggerController()
 	locationsController := controllers.NewLocationController(locationService, structValidator)
 
 	customHTTP.CreateWebServer(
 		appCfg.AppConfig,
-		[]customHTTP.Middleware{
-			middleware.Recoverer,
-			httpMiddleware.CreateCorsMiddleware(config.GetCorsOriginAddressByEnv(env)).Handler,
+		[]echo.MiddlewareFunc{ // Middlewares are run in the slice order
+			echoMiddleware.Recover(),
+			httpMiddleware.CreateCorsMiddleware(config.GetCorsOriginAddressByEnv(env)),
+			//otelecho.Middleware(appCfg.AppConfig.Name),
 			httpMiddleware.CreateAppContextMiddleware(),
-			httpMiddleware.CreateLoggingMiddleware(),
+			echoMiddleware.Logger(),
 		},
 		[]customHTTP.Endpoint{
 			swaggerController.SwaggerEndpoint(),
 			healthDBController.HealthEndpoint(),
-			metricsController.MetricsEndpoint(),
 			locationsController.CreateLocationEndpoint(),
 			locationsController.UpdateLocationEndpoint(),
 			locationsController.PaginatedLocationsEndpoint(),

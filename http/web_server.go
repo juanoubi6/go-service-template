@@ -2,7 +2,8 @@ package http
 
 import (
 	"context"
-	"github.com/go-chi/chi/v5"
+	"github.com/labstack/echo-contrib/prometheus"
+	"github.com/labstack/echo/v4"
 	"go-service-template/config"
 	"go-service-template/monitor"
 	"net/http"
@@ -14,17 +15,21 @@ import (
 
 func CreateWebServer(
 	appConfig config.AppConfig,
-	globalMiddleware []Middleware,
+	globalMiddleware []echo.MiddlewareFunc,
 	endpoints []Endpoint,
 ) {
-	router := chi.NewRouter()
+	router := echo.New()
+
+	// Decorate router with Prometheus metrics
+	promMetrics := prometheus.NewPrometheus(appConfig.Name, nil)
+	promMetrics.Use(router)
 
 	// Register global middleware
 	router.Use(globalMiddleware...)
 
 	// Create each endpoint with their custom middlewares
 	for _, endpoint := range endpoints {
-		router.With(endpoint.Middlewares...).MethodFunc(endpoint.Method, endpoint.Path, endpoint.Handler)
+		router.Add(endpoint.Method, endpoint.Path, endpoint.Handler, endpoint.Middlewares...)
 	}
 
 	serverCtx, serverCtxCancelFn := context.WithCancel(context.Background())

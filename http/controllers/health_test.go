@@ -1,6 +1,7 @@
 package controllers_test
 
 import (
+	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	customHTTP "go-service-template/http"
@@ -13,6 +14,11 @@ import (
 type HealthControllerSuite struct {
 	suite.Suite
 	healthEndpoint customHTTP.Endpoint
+	echoRouter     *echo.Echo
+}
+
+func (s *HealthControllerSuite) SetupSuite() {
+	s.echoRouter = echo.New()
 }
 
 func (s *HealthControllerSuite) SetupTest() {
@@ -30,7 +36,8 @@ func (s *HealthControllerSuite) Test_Health_Success() {
 
 	req, _ := http.NewRequest(http.MethodGet, "/health", http.NoBody)
 
-	s.healthEndpoint.Handler.ServeHTTP(w, req)
+	err := s.healthEndpoint.Handler(s.echoRouter.NewContext(req, w))
 
+	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), http.StatusOK, w.Code)
 }

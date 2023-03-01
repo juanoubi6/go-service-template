@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/labstack/echo/v4"
 	httpSwagger "github.com/swaggo/http-swagger"
 	customHTTP "go-service-template/http"
 	"net/http"
@@ -16,6 +17,6 @@ func (c *SwaggerController) SwaggerEndpoint() customHTTP.Endpoint {
 	return customHTTP.Endpoint{
 		Method:  http.MethodGet,
 		Path:    "/v1/swagger/*",
-		Handler: httpSwagger.Handler(),
+		Handler: echo.WrapHandler(httpSwagger.Handler()),
 	}
 }

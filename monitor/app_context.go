@@ -58,7 +58,6 @@ func (appCtx *AppContext) GetRootSpan(name string, opts ...trace.SpanStartOption
 	opts = append(opts,
 		trace.WithAttributes(attribute.String(CorrelationIDField, appCtx.correlationID)),
 		trace.WithSpanKind(trace.SpanKindServer),
-		trace.WithNewRoot(),
 	)
 
 	newCtx, rootSpan := appCtx.tracer.Start(appCtx, name, opts...)

@@ -1,8 +1,11 @@
 package middleware
 
-import "github.com/go-chi/cors"
+import (
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+)
 
-func CreateCorsMiddleware(allowedOrigins []string) *cors.Cors {
+func CreateCorsMiddleware(allowedOrigins []string) echo.MiddlewareFunc {
 	if allowedOrigins == nil {
 		allowedOrigins = []string{"*"}
 	}
@@ -11,10 +14,10 @@ func CreateCorsMiddleware(allowedOrigins []string) *cors.Cors {
 		allowedOrigins = append(allowedOrigins, "*")
 	}
 
-	return cors.New(cors.Options{
-		AllowedOrigins:   allowedOrigins,
-		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"},
-		AllowedHeaders:   []string{"*"},
+	return middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins:     allowedOrigins,
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"},
+		AllowHeaders:     []string{"*"},
 		AllowCredentials: true,
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	})
