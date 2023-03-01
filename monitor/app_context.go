@@ -18,7 +18,6 @@ type ApplicationContext interface {
 }
 
 type AppContext struct {
-	rootSpan      trace.Span
 	tracer        trace.Tracer
 	correlationID string
 	context.Context
@@ -33,16 +32,10 @@ func CreateAppContextFromRequest(request *http.Request, correlationID string) *A
 		attribute.String(CorrelationIDField, correlationID),
 	))
 
-	ctx, rootSpan := tracer.Start(request.Context(), request.RequestURI,
-		trace.WithAttributes(attribute.String(CorrelationIDField, correlationID)),
-		trace.WithSpanKind(trace.SpanKindServer),
-	)
-
 	appCtx := &AppContext{
 		tracer:        tracer,
-		rootSpan:      rootSpan,
 		correlationID: correlationID,
-		Context:       ctx,
+		Context:       request.Context(),
 	}
 
 	return appCtx
@@ -92,7 +85,6 @@ func CreateMockAppContext(operationName string) *AppContext {
 
 func (appCtx *AppContext) clone(newCtx context.Context) *AppContext {
 	return &AppContext{
-		rootSpan:      appCtx.rootSpan,
 		tracer:        appCtx.tracer,
 		correlationID: appCtx.correlationID,
 		Context:       newCtx,
