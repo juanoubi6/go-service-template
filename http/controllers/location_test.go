@@ -101,7 +101,7 @@ func (s *LocationControllerSuite) Test_createLocation_Success() {
 		assert.Equal(s.T(), "someName", request.Name)
 	}).Return(domain.Location{ID: "1"}, nil)
 
-	s.createLocationEP.Handler(s.echoRouter.NewContext(req, w))
+	_ = s.createLocationEP.Handler(s.echoRouter.NewContext(req, w))
 
 	var response struct {
 		Data domain.Location `json:"data"`
@@ -121,7 +121,7 @@ func (s *LocationControllerSuite) Test_createLocation_Returns400OnInvalidBody() 
 
 	req, _ := http.NewRequest(http.MethodPost, "/v1/locations", bytes.NewBuffer([]byte("invalid body")))
 
-	s.createLocationEP.Handler(s.echoRouter.NewContext(req, w))
+	_ = s.createLocationEP.Handler(s.echoRouter.NewContext(req, w))
 
 	assert.Equal(s.T(), http.StatusBadRequest, w.Code)
 	s.assertMockExpectations()
@@ -139,7 +139,7 @@ func (s *LocationControllerSuite) Test_updateLocation_Success() {
 	echoCtx.SetPath(s.updateLocationEP.Path)
 	echoCtx.SetParamNames("locationID")
 	echoCtx.SetParamValues(mockUpdateLocationRequest.ID)
-	s.updateLocationEP.Handler(echoCtx)
+	_ = s.updateLocationEP.Handler(echoCtx)
 
 	var response struct {
 		Data domain.Location `json:"data"`
@@ -163,7 +163,7 @@ func (s *LocationControllerSuite) Test_updateLocation_Returns400OnInvalidBody() 
 	echoCtx.SetPath(s.updateLocationEP.Path)
 	echoCtx.SetParamNames("locationID")
 	echoCtx.SetParamValues("uuid")
-	s.updateLocationEP.Handler(echoCtx)
+	_ = s.updateLocationEP.Handler(echoCtx)
 
 	assert.Equal(s.T(), http.StatusBadRequest, w.Code)
 	s.assertMockExpectations()
@@ -179,7 +179,7 @@ func (s *LocationControllerSuite) Test_updateLocation_Returns400OnLocationIDMism
 	echoCtx.SetPath(s.updateLocationEP.Path)
 	echoCtx.SetParamNames("locationID")
 	echoCtx.SetParamValues("differentUUID")
-	s.updateLocationEP.Handler(echoCtx)
+	_ = s.updateLocationEP.Handler(echoCtx)
 
 	assert.Equal(s.T(), http.StatusBadRequest, w.Code)
 	s.assertMockExpectations()
@@ -209,7 +209,7 @@ func (s *LocationControllerSuite) Test_getPaginatedLocations_Success() {
 		}, nil,
 	)
 
-	s.getPaginatedLocationsEP.Handler(s.echoRouter.NewContext(req, w))
+	_ = s.getPaginatedLocationsEP.Handler(s.echoRouter.NewContext(req, w))
 
 	var response struct {
 		Data domain.CursorPage[domain.Location] `json:"data"`
@@ -236,7 +236,7 @@ func (s *LocationControllerSuite) Test_getPaginatedLocations_Returns400OnEmptyCu
 		http.NoBody,
 	)
 
-	s.getPaginatedLocationsEP.Handler(s.echoRouter.NewContext(req, w))
+	_ = s.getPaginatedLocationsEP.Handler(s.echoRouter.NewContext(req, w))
 
 	assert.Equal(s.T(), http.StatusBadRequest, w.Code)
 	s.assertMockExpectations()
@@ -251,7 +251,7 @@ func (s *LocationControllerSuite) Test_getPaginatedLocations_Returns400OnInvalid
 		http.NoBody,
 	)
 
-	s.getPaginatedLocationsEP.Handler(s.echoRouter.NewContext(req, w))
+	_ = s.getPaginatedLocationsEP.Handler(s.echoRouter.NewContext(req, w))
 
 	assert.Equal(s.T(), http.StatusBadRequest, w.Code)
 	s.assertMockExpectations()
@@ -266,7 +266,7 @@ func (s *LocationControllerSuite) Test_getPaginatedLocations_Returns400OnInvalid
 		http.NoBody,
 	)
 
-	s.getPaginatedLocationsEP.Handler(s.echoRouter.NewContext(req, w))
+	_ = s.getPaginatedLocationsEP.Handler(s.echoRouter.NewContext(req, w))
 
 	assert.Equal(s.T(), http.StatusBadRequest, w.Code)
 	s.assertMockExpectations()
@@ -285,7 +285,7 @@ func (s *LocationControllerSuite) Test_getLocationDetails_Success() {
 	echoCtx.SetPath(s.getLocationDetailsEP.Path)
 	echoCtx.SetParamNames("locationID")
 	echoCtx.SetParamValues(locationID)
-	s.getLocationDetailsEP.Handler(echoCtx)
+	_ = s.getLocationDetailsEP.Handler(echoCtx)
 
 	var response struct {
 		Data domain.Location `json:"data"`
@@ -313,7 +313,7 @@ func (s *LocationControllerSuite) Test_getLocationDetails_Returns404WhenLocation
 	echoCtx.SetPath(s.getLocationDetailsEP.Path)
 	echoCtx.SetParamNames("locationID")
 	echoCtx.SetParamValues(locationID)
-	s.getLocationDetailsEP.Handler(echoCtx)
+	_ = s.getLocationDetailsEP.Handler(echoCtx)
 
 	assert.Equal(s.T(), http.StatusNotFound, w.Code)
 	s.assertMockExpectations()

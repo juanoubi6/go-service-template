@@ -57,8 +57,8 @@ func CreateTestEndpoint() echo.HandlerFunc {
 		appCtx := GetAppContext(c)
 		if appCtx.GetCorrelationID() != "" {
 			return c.String(http.StatusOK, appCtx.GetCorrelationID())
-		} else {
-			return c.String(http.StatusBadRequest, "error")
 		}
+
+		return c.String(http.StatusBadRequest, "error")
 	}
 }

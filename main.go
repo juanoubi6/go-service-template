@@ -51,7 +51,6 @@ func main() {
 		[]echo.MiddlewareFunc{ // Middlewares are run in the slice order
 			echoMiddleware.Recover(),
 			httpMiddleware.CreateCorsMiddleware(config.GetCorsOriginAddressByEnv(env)),
-			//otelecho.Middleware(appCfg.AppConfig.Name),
 			httpMiddleware.CreateAppContextMiddleware(),
 			echoMiddleware.Logger(),
 		},
