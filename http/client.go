@@ -9,6 +9,7 @@ import (
 	"go-service-template/config"
 	"go-service-template/monitor"
 	"go-service-template/utils"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"io"
 	"net"
 	"net/http"
@@ -91,7 +92,7 @@ func buildClient(cfg config.HTTPClientConfig) *http.Client {
 	}
 
 	return &http.Client{
-		Transport: &transport,
+		Transport: otelhttp.NewTransport(&transport),
 		Timeout:   time.Duration(requestTimeoutSeconds) * time.Second,
 	}
 }
