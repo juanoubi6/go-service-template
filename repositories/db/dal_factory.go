@@ -5,12 +5,12 @@ import (
 	"database/sql"
 	"fmt"
 	sq "github.com/Masterminds/squirrel"
-	"github.com/XSAM/otelsql"
 	_ "github.com/lib/pq" // side effect
 	"github.com/pkg/errors"
 	"go-service-template/config"
 	"go-service-template/monitor"
 	"go-service-template/repositories"
+	"go.nhat.io/otelsql"
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 	"regexp"
 	"time"
@@ -59,15 +59,24 @@ func connectDB(connString string, dbConfig config.DBConfig) (*sql.DB, error) {
 
 	uri := connString
 
+	// Register the otelsql wrapper for the provided postgres driver.
+	driverNameWrapper, err := otelsql.Register(driverName,
+		otelsql.AllowRoot(),
+		otelsql.TraceQueryWithoutArgs(),
+		otelsql.TraceRowsClose(),
+		otelsql.TraceRowsAffected(),
+		otelsql.WithSystem(semconv.DBSystemPostgreSQL),
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	// Use OTEL to register query traces
-	dbPtr, err := otelsql.Open(driverName, uri)
+	dbPtr, err := sql.Open(driverNameWrapper, uri)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to %s database: %s", driverName, err)
 	}
 
-	err = otelsql.RegisterDBStatsMetrics(dbPtr, otelsql.WithAttributes(
-		semconv.DBSystemPostgreSQL,
-	))
 	if err != nil {
 		return nil, err
 	}
