@@ -85,7 +85,7 @@ func (s *LocationServiceSuite) Test_CreateLocation_Success() {
 	s.dbFactoryMock.On("GetLocationsDB").Return(s.locationsDBMock, nil)
 	s.locationsDBMock.On("CheckLocationNameExistence", testCtx, createLocData.Name).Return(false, nil).Once()
 
-	s.locationsDBMock.On("StartTx").Return(nil).Once()
+	s.locationsDBMock.On("StartTx", testCtx).Return(nil).Once()
 	s.locationsDBMock.On("CommitTx").Return(nil).Once()
 
 	s.locationsDBMock.On("CreateLocation", testCtx, mock.Anything).Return(nil).Once()
@@ -147,7 +147,7 @@ func (s *LocationServiceSuite) Test_UpdateLocation_Success() {
 	}
 
 	s.dbFactoryMock.On("GetLocationsDB").Return(s.locationsDBMock, nil)
-	s.locationsDBMock.On("StartTx").Return(nil).Once()
+	s.locationsDBMock.On("StartTx", testCtx).Return(nil).Once()
 	s.locationsDBMock.On("CommitTx").Return(nil).Once()
 
 	s.locationsDBMock.On("GetLocationByID", testCtx, updateLocData.ID).Return(&existingLocation, nil).Once()
@@ -168,7 +168,7 @@ func (s *LocationServiceSuite) Test_UpdateLocation_Success() {
 
 func (s *LocationServiceSuite) Test_UpdateLocation_FailsIfAddressValidationCannotFindAddress() {
 	s.dbFactoryMock.On("GetLocationsDB").Return(s.locationsDBMock, nil)
-	s.locationsDBMock.On("StartTx").Return(nil).Once()
+	s.locationsDBMock.On("StartTx", testCtx).Return(nil).Once()
 	s.locationsDBMock.On("RollbackTx").Return(nil).Once()
 
 	s.locationsDBMock.On("GetLocationByID", testCtx, updateLocData.ID).Return(&domain.Location{Name: "OldName"}, nil).Once()
@@ -184,7 +184,7 @@ func (s *LocationServiceSuite) Test_UpdateLocation_FailsIfAddressValidationCanno
 
 func (s *LocationServiceSuite) Test_UpdateLocation_FailsIfUpdatedLocationNameIsAlreadyInUse() {
 	s.dbFactoryMock.On("GetLocationsDB").Return(s.locationsDBMock, nil)
-	s.locationsDBMock.On("StartTx").Return(nil).Once()
+	s.locationsDBMock.On("StartTx", testCtx).Return(nil).Once()
 	s.locationsDBMock.On("RollbackTx").Return(nil).Once()
 
 	s.locationsDBMock.On("GetLocationByID", testCtx, updateLocData.ID).Return(&domain.Location{Name: "OldName"}, nil).Once()
@@ -199,7 +199,7 @@ func (s *LocationServiceSuite) Test_UpdateLocation_FailsIfUpdatedLocationNameIsA
 
 func (s *LocationServiceSuite) Test_UpdateLocation_FailsIfLocationCannotBeFound() {
 	s.dbFactoryMock.On("GetLocationsDB").Return(s.locationsDBMock, nil)
-	s.locationsDBMock.On("StartTx").Return(nil).Once()
+	s.locationsDBMock.On("StartTx", testCtx).Return(nil).Once()
 	s.locationsDBMock.On("RollbackTx").Return(nil).Once()
 
 	s.locationsDBMock.On("GetLocationByID", testCtx, updateLocData.ID).Return(nil, nil).Once()

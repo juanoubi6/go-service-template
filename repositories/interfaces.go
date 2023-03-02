@@ -15,7 +15,7 @@ type DBReader interface {
 
 type QueryExecutor interface {
 	Ping() error
-	StartTx() error
+	StartTx(ctx monitor.ApplicationContext) error
 	RollbackTx() error
 	CommitTx() error
 	Exec(ctx monitor.ApplicationContext, stmt string, fields ...interface{}) (sql.Result, error)

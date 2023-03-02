@@ -17,12 +17,12 @@ func CreateTxDBContext(db *sql.DB) *TxDBContext {
 	return &TxDBContext{db: db, tx: nil}
 }
 
-func (txDb *TxDBContext) StartTx() error {
+func (txDb *TxDBContext) StartTx(ctx monitor.ApplicationContext) error {
 	if txDb.tx != nil {
 		return errors.New("transaction already started")
 	}
 
-	newTx, err := txDb.db.Begin()
+	newTx, err := txDb.db.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("unable to create transaction: %w", err)
 	}
@@ -107,7 +107,7 @@ func (txDb *TxDBContext) getDBReader() repositories.DBReader {
 func (txDb *TxDBContext) WithTx(ctx monitor.ApplicationContext, fn func(fnCtx monitor.ApplicationContext) error) error {
 	var err error
 
-	if err = txDb.StartTx(); err != nil {
+	if err = txDb.StartTx(ctx); err != nil {
 		return err
 	}
 

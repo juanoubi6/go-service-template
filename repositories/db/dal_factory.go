@@ -61,7 +61,6 @@ func connectDB(connString string, dbConfig config.DBConfig) (*sql.DB, error) {
 
 	// Register the otelsql wrapper for the provided postgres driver.
 	driverNameWrapper, err := otelsql.Register(driverName,
-		otelsql.AllowRoot(),
 		otelsql.TraceQueryWithoutArgs(),
 		otelsql.TraceRowsClose(),
 		otelsql.TraceRowsAffected(),

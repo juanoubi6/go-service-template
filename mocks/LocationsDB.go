@@ -178,13 +178,13 @@ func (_m *LocationsDB) RollbackTx() error {
 	return r0
 }
 
-// StartTx provides a mock function with given fields:
-func (_m *LocationsDB) StartTx() error {
-	ret := _m.Called()
+// StartTx provides a mock function with given fields: ctx
+func (_m *LocationsDB) StartTx(ctx monitor.ApplicationContext) error {
+	ret := _m.Called(ctx)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func() error); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(monitor.ApplicationContext) error); ok {
+		r0 = rf(ctx)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -208,7 +208,7 @@ func (_m *LocationsDB) UpdateLocation(ctx monitor.ApplicationContext, location d
 
 // WithTx provides a mock function with given fields: ctx, fn
 func (_m *LocationsDB) WithTx(ctx monitor.ApplicationContext, fn func(monitor.ApplicationContext) error) error {
-	err := _m.StartTx()
+	err := _m.StartTx(ctx)
 	if err != nil {
 		return err
 	}
