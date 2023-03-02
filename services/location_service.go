@@ -20,7 +20,7 @@ const (
 )
 
 type LocationService struct {
-	logger        monitor.StdLogger
+	logger        monitor.AppLogger
 	dbFactory     repositories.DatabaseFactory
 	googleMapsAPI repositories.GoogleMapsAPI
 }

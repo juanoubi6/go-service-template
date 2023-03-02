@@ -17,7 +17,7 @@ import (
 )
 
 type LocationController struct {
-	logger          monitor.StdLogger
+	logger          monitor.AppLogger
 	locationService services.ILocationService
 	validator       *validator.Validate
 }

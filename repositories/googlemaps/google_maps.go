@@ -13,7 +13,7 @@ import (
 const PremisePlaceType = "premise"
 
 type Repository struct {
-	logger     monitor.StdLogger
+	logger     monitor.AppLogger
 	httpClient customHTTP.CustomHTTPClient
 }
 
