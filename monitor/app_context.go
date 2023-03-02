@@ -55,10 +55,15 @@ func (appCtx *AppContext) GetTracer() trace.Tracer {
 
 // GetRootSpan returns the appCtx itself as the context and the root span created before
 func (appCtx *AppContext) GetRootSpan(name string, opts ...trace.SpanStartOption) (ApplicationContext, trace.Span) {
+	correlationIDSpanAttr := attribute.String(CorrelationIDField, appCtx.correlationID)
 	opts = append(opts,
-		trace.WithAttributes(attribute.String(CorrelationIDField, appCtx.correlationID)),
+		trace.WithAttributes(correlationIDSpanAttr),
 		trace.WithSpanKind(trace.SpanKindServer),
 	)
+
+	// Retrieve any existing span, so we can add the CorrelationID to it
+	fatherSpan := trace.SpanFromContext(appCtx)
+	fatherSpan.SetAttributes(correlationIDSpanAttr)
 
 	newCtx, rootSpan := appCtx.tracer.Start(appCtx, name, opts...)
 
