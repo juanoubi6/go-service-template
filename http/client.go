@@ -122,6 +122,8 @@ func (cli *CustomClient) DoWithRetry(
 	backoff time.Duration,
 	statusCodesToRetry []int,
 ) (CustomHTTPResponse, error) {
+	fnName := "DoWithRetry"
+
 	var resp *http.Response
 	var err error
 	var request *http.Request
@@ -150,7 +152,7 @@ func (cli *CustomClient) DoWithRetry(
 			resp.Body.Close()
 		}
 		if err != nil {
-			cli.logger.Error(ctx, "DoWithRetry", "http request failed", err)
+			cli.logger.Error(ctx, fnName, "http request failed", err)
 		}
 
 		attempts--
@@ -167,7 +169,7 @@ func (cli *CustomClient) DoWithRetry(
 		return CustomHTTPResponse{}, errors.New("failed to execute request, retry amount exceeded")
 	}
 
-	return cli.handleResponse(ctx, resp, "DoWithRetry")
+	return cli.handleResponse(ctx, resp, fnName)
 }
 
 func (cli *CustomClient) handleResponse(
