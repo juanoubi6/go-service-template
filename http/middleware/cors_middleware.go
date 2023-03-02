@@ -1,11 +1,11 @@
 package middleware
 
 import (
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	echoMiddleware "github.com/labstack/echo/v4/middleware"
+	customHTTP "go-service-template/http"
 )
 
-func CreateCorsMiddleware(allowedOrigins []string) echo.MiddlewareFunc {
+func CreateCorsMiddleware(allowedOrigins []string) customHTTP.Middleware {
 	if allowedOrigins == nil {
 		allowedOrigins = []string{"*"}
 	}
@@ -14,7 +14,7 @@ func CreateCorsMiddleware(allowedOrigins []string) echo.MiddlewareFunc {
 		allowedOrigins = append(allowedOrigins, "*")
 	}
 
-	return middleware.CORSWithConfig(middleware.CORSConfig{
+	return echoMiddleware.CORSWithConfig(echoMiddleware.CORSConfig{
 		AllowOrigins:     allowedOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"},
 		AllowHeaders:     []string{"*"},

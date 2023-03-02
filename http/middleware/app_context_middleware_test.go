@@ -4,6 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	customHTTP "go-service-template/http"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -11,8 +12,8 @@ import (
 
 type AppContextMiddlewareSuite struct {
 	suite.Suite
-	appContextMiddleware echo.MiddlewareFunc
-	testEndpoint         echo.HandlerFunc
+	appContextMiddleware customHTTP.Middleware
+	testEndpoint         customHTTP.Handler
 	echoRouter           *echo.Echo
 }
 
@@ -52,7 +53,7 @@ func (sut *AppContextMiddlewareSuite) Test_AppContextMiddleware_UsesCorrelationI
 	assert.Equal(sut.T(), "value", res.Body.String())
 }
 
-func CreateTestEndpoint() echo.HandlerFunc {
+func CreateTestEndpoint() customHTTP.Handler {
 	return func(c echo.Context) error {
 		appCtx := GetAppContext(c)
 		if appCtx.GetCorrelationID() != "" {

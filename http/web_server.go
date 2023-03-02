@@ -15,7 +15,7 @@ import (
 
 func CreateWebServer(
 	appConfig config.AppConfig,
-	globalMiddleware []echo.MiddlewareFunc,
+	globalMiddleware []Middleware,
 	endpoints []Endpoint,
 ) {
 	router := echo.New()

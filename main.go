@@ -50,7 +50,7 @@ func main() {
 
 	customHTTP.CreateWebServer(
 		appCfg.AppConfig,
-		[]echo.MiddlewareFunc{ // Middlewares are run in the slice order
+		[]customHTTP.Middleware{ // Middlewares are run in the slice order
 			otelecho.Middleware(appCfg.AppConfig.Name, otelecho.WithSkipper(func(c echo.Context) bool {
 				ignoredPaths := []string{"/health", "/metrics"}
 				return utils.ListContains[string](ignoredPaths, c.Path())

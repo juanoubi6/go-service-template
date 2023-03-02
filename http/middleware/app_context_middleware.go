@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"github.com/labstack/echo/v4"
+	customHTTP "go-service-template/http"
 	"go-service-template/monitor"
 	"net/http"
 )
@@ -12,7 +13,7 @@ type ContextKey string
 const AppContextKey ContextKey = "appContextKey"
 const CorrelationIDHeader = "Correlation-Id"
 
-func CreateAppContextMiddleware() echo.MiddlewareFunc {
+func CreateAppContextMiddleware() customHTTP.Middleware {
 	return echo.WrapMiddleware(
 		func(next http.Handler) http.Handler {
 			fn := func(w http.ResponseWriter, r *http.Request) {

@@ -4,9 +4,12 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+type Middleware = echo.MiddlewareFunc
+type Handler = echo.HandlerFunc
+
 type Endpoint struct {
 	Method      string
 	Path        string
-	Handler     echo.HandlerFunc
-	Middlewares []echo.MiddlewareFunc
+	Handler     Handler
+	Middlewares []Middleware
 }
