@@ -96,7 +96,10 @@ func (ct *LocationController) LocationDetailsEndpoint() customHTTP.Endpoint {
 
 func (ct *LocationController) createLocation(c echo.Context) error {
 	fnName := "createLocation"
-	appCtx := middleware.GetAppContext(c)
+	var appCtx monitor.ApplicationContext = middleware.GetAppContext(c)
+
+	appCtx, span := appCtx.GetRootSpan(fnName)
+	defer span.End()
 
 	createLocationRequest, err := parseAndValidateBody[dto.CreateLocationRequest](c.Request().Body, ct.validator)
 	if err != nil {
@@ -115,7 +118,10 @@ func (ct *LocationController) createLocation(c echo.Context) error {
 
 func (ct *LocationController) updateLocation(c echo.Context) error {
 	fnName := "updateLocation"
-	appCtx := middleware.GetAppContext(c)
+	var appCtx monitor.ApplicationContext = middleware.GetAppContext(c)
+
+	appCtx, span := appCtx.GetRootSpan(fnName)
+	defer span.End()
 
 	locationID := c.Param("locationID")
 	if locationID == "" {
@@ -171,7 +177,10 @@ func (ct *LocationController) getPaginatedLocations(c echo.Context) error {
 
 func (ct *LocationController) getLocationDetails(c echo.Context) error {
 	fnName := "getLocationDetails"
-	appCtx := middleware.GetAppContext(c)
+	var appCtx monitor.ApplicationContext = middleware.GetAppContext(c)
+
+	appCtx, span := appCtx.GetRootSpan(fnName)
+	defer span.End()
 
 	locationID := c.Param("locationID")
 	if locationID == "" {

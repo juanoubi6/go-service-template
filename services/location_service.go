@@ -8,6 +8,7 @@ import (
 	"go-service-template/domain/googlemaps"
 	"go-service-template/monitor"
 	"go-service-template/repositories"
+	"go-service-template/utils"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -33,7 +34,10 @@ func NewLocationService(dbFactory repositories.DatabaseFactory, googleMapsAPI re
 }
 
 func (s *LocationService) CreateLocation(ctx monitor.ApplicationContext, newLocationData dto.CreateLocationRequest) (location domain.Location, err error) {
-	fnName := "CreateLocation"
+	fnName := "LocationService.CreateLocation"
+
+	ctx, span := ctx.StartSpan(fnName, trace.WithAttributes(attribute.String("new_location_data", utils.ToJSON(newLocationData))))
+	defer span.End()
 
 	newLocation, err := s.buildNewLocation(ctx, newLocationData)
 	if err != nil {
@@ -82,7 +86,10 @@ func (s *LocationService) CreateLocation(ctx monitor.ApplicationContext, newLoca
 }
 
 func (s *LocationService) UpdateLocation(ctx monitor.ApplicationContext, updatedLocationData dto.UpdateLocationRequest) (location domain.Location, err error) {
-	fnName := "UpdateLocation"
+	fnName := "LocationService.UpdateLocation"
+
+	ctx, span := ctx.StartSpan(fnName, trace.WithAttributes(attribute.String("updated_location_data", utils.ToJSON(updatedLocationData))))
+	defer span.End()
 
 	db, err := s.dbFactory.GetLocationsDB()
 	if err != nil {
@@ -130,6 +137,11 @@ func (s *LocationService) UpdateLocation(ctx monitor.ApplicationContext, updated
 }
 
 func (s *LocationService) GetLocationByID(ctx monitor.ApplicationContext, id string) (*domain.Location, error) {
+	fnName := "LocationService.GetLocationByID"
+
+	ctx, span := ctx.StartSpan(fnName, trace.WithAttributes(attribute.String("location_id", id)))
+	defer span.End()
+
 	db, err := s.dbFactory.GetLocationsDB()
 	if err != nil {
 		return nil, err
@@ -141,7 +153,7 @@ func (s *LocationService) GetLocationByID(ctx monitor.ApplicationContext, id str
 func (s *LocationService) GetPaginatedLocations(ctx monitor.ApplicationContext, filters domain.LocationsFilters) (page domain.CursorPage[domain.Location], err error) {
 	fnName := "LocationService.GetPaginatedLocations"
 
-	ctx, span := ctx.StartSpan(fnName, trace.WithAttributes(attribute.String("filters", filters.ToJSON())))
+	ctx, span := ctx.StartSpan(fnName, trace.WithAttributes(attribute.String("filters", utils.ToJSON(filters))))
 	defer span.End()
 
 	db, err := s.dbFactory.GetLocationsDB()

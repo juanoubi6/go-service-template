@@ -15,6 +15,9 @@ type LocationsDAL struct {
 }
 
 func (dal *LocationsDAL) CreateLocation(ctx monitor.ApplicationContext, location domain.Location) error {
+	ctx, span := ctx.StartSpan("LocationsDAL.CreateLocation")
+	defer span.End()
+
 	_, err := dal.Exec(
 		ctx,
 		InsertLocation,
@@ -51,6 +54,9 @@ func (dal *LocationsDAL) CreateLocation(ctx monitor.ApplicationContext, location
 }
 
 func (dal *LocationsDAL) UpdateLocation(ctx monitor.ApplicationContext, location domain.Location) error {
+	ctx, span := ctx.StartSpan("LocationsDAL.UpdateLocation")
+	defer span.End()
+
 	_, err := dal.Exec(
 		ctx,
 		UpdateLocation,
@@ -86,6 +92,9 @@ func (dal *LocationsDAL) UpdateLocation(ctx monitor.ApplicationContext, location
 }
 
 func (dal *LocationsDAL) CreateSubLocation(ctx monitor.ApplicationContext, subLocation domain.SubLocation) error {
+	ctx, span := ctx.StartSpan("LocationsDAL.CreateSubLocation")
+	defer span.End()
+
 	_, err := dal.Exec(
 		ctx,
 		InsertSubLocation,
@@ -100,10 +109,16 @@ func (dal *LocationsDAL) CreateSubLocation(ctx monitor.ApplicationContext, subLo
 }
 
 func (dal *LocationsDAL) GetLocationByID(ctx monitor.ApplicationContext, id string) (*domain.Location, error) {
+	ctx, span := ctx.StartSpan("LocationsDAL.GetLocationByID")
+	defer span.End()
+
 	return dal.parseLocationFromRow(dal.getDBReader().QueryRowContext(ctx, GetLocationByID, id))
 }
 
 func (dal *LocationsDAL) CheckLocationNameExistence(ctx monitor.ApplicationContext, name string) (bool, error) {
+	ctx, span := ctx.StartSpan("LocationsDAL.CheckLocationNameExistence")
+	defer span.End()
+
 	var locationID string
 
 	if err := dal.getDBReader().QueryRowContext(ctx, CheckLocationNameExistence, name).Scan(&locationID); err != nil {
