@@ -1,0 +1,219 @@
+{
+	"info": {
+		"_postman_id": "85425356-2651-4e23-a0cd-d1486fc31d9d",
+		"name": "go-service-template",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "19099354"
+	},
+	"item": [
+		{
+			"name": "Locations",
+			"item": [
+				{
+					"name": "Get paginated locations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/locations?direction=next&limit=10",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"locations"
+							],
+							"query": [
+								{
+									"key": "direction",
+									"value": "next"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "cursor",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "name",
+									"value": "22222",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Get paginated locations",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/v1/locations?direction=next&limit=10",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"locations"
+									],
+									"query": [
+										{
+											"key": "direction",
+											"value": "next"
+										},
+										{
+											"key": "limit",
+											"value": "10"
+										},
+										{
+											"key": "cursor",
+											"value": "",
+											"disabled": true
+										},
+										{
+											"key": "name",
+											"value": "22222",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Vary",
+									"value": "Origin"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 27 Dec 2022 14:07:52 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "523"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"data\": {\n        \"data\": [\n            {\n                \"id\": \"ed9ac1d3-ab01-4aa8-93ce-236d48906552\",\n                \"name\": \"Copart Wichita Wholesale\",\n                \"information\": {\n                    \"address\": \"4510 S Madison\",\n                    \"city\": \"Wichita\",\n                    \"state\": \"KS\",\n                    \"zipcode\": \"67216\",\n                    \"latitude\": 37.6122006,\n                    \"longitude\": -97.3067702,\n                    \"contact_information\": {\n                        \"contact_person\": null,\n                        \"phone_number\": null,\n                        \"email\": null\n                    }\n                },\n                \"location_type\": {\n                    \"id\": 2,\n                    \"type\": \"Wholesale\"\n                },\n                \"supplier\": {\n                    \"id\": 7,\n                    \"name\": \"Copart\"\n                },\n                \"active\": false,\n                \"vroom_fleet_network\": false,\n                \"salesforce_facility_code\": \"codeee\"\n            }\n        ],\n        \"limit\": 10,\n        \"next_page\": null,\n        \"previous_page\": null\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Get location details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/locations/988dc045-7b84-4845-9ed6-9e0faf8eec88",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"locations",
+								"988dc045-7b84-4845-9ed6-9e0faf8eec88"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create location",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"supplier_id\": 1,\r\n    \"name\": \"New Location\",\r\n    \"address\": \"10700 Beech Avenue\",\r\n    \"city\": \"Fontana\",\r\n    \"state\": \"CA\",\r\n    \"zipcode\": \"92337\",\r\n    \"location_type_id\": 2,\r\n    \"contact_person\": \"Juan Manuel Oubina\",\r\n    \"phone_number\": null,\r\n    \"email\": \"juan.manuel.oubina@gmail.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/locations",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"locations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update location",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\":\"988dc045-7b84-4845-9ed6-9e0faf8eec88\",\r\n    \"supplier_id\": 1,\r\n    \"name\": \"Update Location Name\",\r\n    \"address\": \"16600 Fort Street\",\r\n    \"city\": \"Southgate\",\r\n    \"state\": \"MI\",\r\n    \"zipcode\": \"48195\",\r\n    \"location_type_id\": 3,\r\n    \"contact_person\": \"New contact person\",\r\n    \"phone_number\": null,\r\n    \"email\": null,\r\n    \"active\":true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/locations/988dc045-7b84-4845-9ed6-9e0faf8eec88",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"locations",
+								"988dc045-7b84-4845-9ed6-9e0faf8eec88"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Swagger",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/v1/swagger/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"v1",
+						"swagger",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
