@@ -23,6 +23,24 @@ type AppContext struct {
 	context.Context
 }
 
+func CreateAppContextFromContext(ctx context.Context, tracerName, correlationID string) *AppContext {
+	if correlationID == "" {
+		correlationID = uuid.New().String()
+	}
+
+	tracer := otel.Tracer(tracerName, trace.WithInstrumentationAttributes(
+		attribute.String(CorrelationIDField, correlationID),
+	))
+
+	appCtx := &AppContext{
+		tracer:        tracer,
+		correlationID: correlationID,
+		Context:       ctx,
+	}
+
+	return appCtx
+}
+
 func CreateAppContextFromRequest(request *http.Request, correlationID string) *AppContext {
 	if correlationID == "" {
 		correlationID = uuid.New().String()
@@ -36,6 +54,16 @@ func CreateAppContextFromRequest(request *http.Request, correlationID string) *A
 		tracer:        tracer,
 		correlationID: correlationID,
 		Context:       request.Context(),
+	}
+
+	return appCtx
+}
+
+func CreateMockAppContext(operationName string) *AppContext {
+	appCtx := &AppContext{
+		tracer:        trace.NewNoopTracerProvider().Tracer(operationName),
+		correlationID: operationName,
+		Context:       context.Background(),
 	}
 
 	return appCtx
@@ -75,16 +103,6 @@ func (appCtx *AppContext) StartSpan(name string, opts ...trace.SpanStartOption) 
 	newCtx, span := appCtx.tracer.Start(appCtx, name, opts...)
 
 	return appCtx.clone(newCtx), span
-}
-
-func CreateMockAppContext(operationName string) *AppContext {
-	appCtx := &AppContext{
-		tracer:        trace.NewNoopTracerProvider().Tracer(operationName),
-		correlationID: operationName,
-		Context:       context.Background(),
-	}
-
-	return appCtx
 }
 
 func (appCtx *AppContext) clone(newCtx context.Context) *AppContext {
