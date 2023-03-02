@@ -40,8 +40,7 @@ func (r *Repository) ValidateAddress(ctx monitor.ApplicationContext, request goo
 		return nil, err
 	}
 
-	r.logger.Info(fnName,
-		ctx.GetCorrelationID(),
+	r.logger.Info(ctx, fnName,
 		"Validate address endpoint response",
 		monitor.LoggingParam{
 			Name: "response_metadata",
@@ -60,7 +59,7 @@ func (r *Repository) ValidateAddress(ctx monitor.ApplicationContext, request goo
 
 		// Else, log error and return
 		err = errors.New("error from Google Maps API")
-		r.logger.Error(fnName, ctx.GetCorrelationID(), err.Error(), err, monitor.LoggingParam{
+		r.logger.Error(ctx, fnName, err.Error(), err, monitor.LoggingParam{
 			Name:  "error_payload",
 			Value: string(res.BodyPayload),
 		})

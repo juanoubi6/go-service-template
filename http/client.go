@@ -99,7 +99,6 @@ func buildClient(cfg config.HTTPClientConfig) *http.Client {
 
 func (cli *CustomClient) Do(ctx monitor.ApplicationContext, requestValues RequestValues) (CustomHTTPResponse, error) {
 	fnName := "Do"
-	cid := ctx.GetCorrelationID()
 
 	req, err := cli.buildHTTPRequest(ctx, requestValues)
 	if err != nil {
@@ -108,11 +107,11 @@ func (cli *CustomClient) Do(ctx monitor.ApplicationContext, requestValues Reques
 
 	resp, err := cli.baseClient.Do(req)
 	if err != nil {
-		cli.logger.Error(fnName, cid, "http request failed", err)
+		cli.logger.Error(ctx, fnName, "http request failed", err)
 		return CustomHTTPResponse{}, fmt.Errorf("failed to execute request: %w", err)
 	}
 
-	return cli.handleResponse(resp, fnName, cid)
+	return cli.handleResponse(ctx, resp, fnName)
 }
 
 func (cli *CustomClient) DoWithRetry(
@@ -123,8 +122,6 @@ func (cli *CustomClient) DoWithRetry(
 	backoff time.Duration,
 	statusCodesToRetry []int,
 ) (CustomHTTPResponse, error) {
-	cid := ctx.GetCorrelationID()
-
 	var resp *http.Response
 	var err error
 	var request *http.Request
@@ -153,7 +150,7 @@ func (cli *CustomClient) DoWithRetry(
 			resp.Body.Close()
 		}
 		if err != nil {
-			cli.logger.Error("DoWithRetry", cid, "http request failed", err)
+			cli.logger.Error(ctx, "DoWithRetry", "http request failed", err)
 		}
 
 		attempts--
@@ -170,24 +167,24 @@ func (cli *CustomClient) DoWithRetry(
 		return CustomHTTPResponse{}, errors.New("failed to execute request, retry amount exceeded")
 	}
 
-	return cli.handleResponse(resp, "DoWithRetry", cid)
+	return cli.handleResponse(ctx, resp, "DoWithRetry")
 }
 
 func (cli *CustomClient) handleResponse(
+	ctx monitor.ApplicationContext,
 	response *http.Response,
 	functionName string,
-	cid string,
 ) (CustomHTTPResponse, error) {
 	defer func() {
 		err := response.Body.Close()
 		if err != nil {
-			cli.logger.Error(functionName, cid, "failed to close response body", err)
+			cli.logger.Error(ctx, functionName, "failed to close response body", err)
 		}
 	}()
 
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
-		cli.logger.Error(functionName, cid, "failed to read response body", err)
+		cli.logger.Error(ctx, functionName, "failed to read response body", err)
 		return CustomHTTPResponse{}, err
 	}
 
@@ -198,7 +195,7 @@ func (cli *CustomClient) handleResponse(
 		BaseResponse: response,
 	}
 
-	cli.logger.Info(functionName, cid, "HTTP request successful",
+	cli.logger.Info(ctx, functionName, "HTTP request successful",
 		monitor.LoggingParam{
 			Name: "url", Value: response.Request.URL.RawQuery,
 		},
@@ -207,7 +204,7 @@ func (cli *CustomClient) handleResponse(
 		},
 	)
 
-	cli.logger.Debug(functionName, cid, "HTTP request body",
+	cli.logger.Debug(ctx, functionName, "HTTP request body",
 		monitor.LoggingParam{
 			Name: "response_body", Value: string(customResponse.BodyPayload),
 		},

@@ -107,21 +107,23 @@ func connectDB(connString string, dbConfig config.DBConfig) (*sql.DB, error) {
 }
 
 func pingDB(dbPtr *sql.DB) {
-	pingDBLogger := monitor.GetStdLogger("pingDB")
+	fnName := "pingDB"
+	pingDBLogger := monitor.GetStdLogger(fnName)
+	ctx := monitor.CreateAppContextFromContext(context.Background(), fnName, "")
 
 	defer func() {
 		if r := recover(); r != nil {
-			pingDBLogger.Error("pingDB", "", "caught panic in pingDB goroutine", fmt.Errorf("%v", r))
+			pingDBLogger.Error(ctx, "pingDB", "caught panic in pingDB goroutine", fmt.Errorf("%v", r))
 		}
 	}()
 
 	pingFn := func() {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*60)
+		timeoutCtx, cancel := context.WithTimeout(context.Background(), time.Second*60)
 		defer cancel()
 
-		err := dbPtr.PingContext(ctx)
+		err := dbPtr.PingContext(timeoutCtx)
 		if err != nil {
-			pingDBLogger.Error("pingDB", "", "failed to ping DB", err)
+			pingDBLogger.Error(ctx, "pingDB", "failed to ping DB", err)
 		}
 
 		time.Sleep(time.Minute * 1)

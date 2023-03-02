@@ -48,6 +48,7 @@ func CreateWebServer(
 func handleGracefulShutdown(serverCtx context.Context, serverCancelFn context.CancelFunc, server *http.Server) {
 	fnName := "handleGracefulShutdown"
 	shutdownLog := monitor.GetStdLogger("gracefulShutdown")
+	appCtx := monitor.CreateAppContextFromContext(serverCtx, fnName, "")
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c,
@@ -57,7 +58,7 @@ func handleGracefulShutdown(serverCtx context.Context, serverCancelFn context.Ca
 		syscall.SIGTERM)
 
 	<-c
-	shutdownLog.Warn(fnName, "", "Shutting down app")
+	shutdownLog.Warn(appCtx, fnName, "Shutting down app")
 
 	// Shutdown signal with grace period of 30 seconds
 	shutdownCtx, shutdownCancelFn := context.WithTimeout(serverCtx, 30*time.Second)
@@ -70,7 +71,7 @@ func handleGracefulShutdown(serverCtx context.Context, serverCancelFn context.Ca
 	// Trigger graceful shutdown
 	err := server.Shutdown(shutdownCtx)
 	if err != nil {
-		shutdownLog.Error(fnName, "", "failed to shutdown server", err)
+		shutdownLog.Error(appCtx, fnName, "failed to shutdown server", err)
 	}
 
 	serverCancelFn()

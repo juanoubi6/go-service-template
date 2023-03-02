@@ -1,12 +1,13 @@
 package monitor
 
 import (
+	"github.com/uptrace/opentelemetry-go-extra/otelzap"
 	"go-service-template/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-var logger *zap.Logger
+var logger *otelzap.Logger
 
 func init() {
 	env, _ := config.GetEnvironment()
@@ -23,10 +24,12 @@ func init() {
 		zapConfig.EncoderConfig.CallerKey = zapcore.OmitKey
 	}
 
-	logger, err = zapConfig.Build()
+	zapLogger, err := zapConfig.Build()
 	if err != nil {
 		panic(err)
 	}
+
+	logger = otelzap.New(zapLogger)
 }
 
 type LoggingParam struct {
@@ -35,10 +38,10 @@ type LoggingParam struct {
 }
 
 type AppLogger interface {
-	Debug(function, cid, msg string, params ...LoggingParam)
-	Info(function, cid, msg string, params ...LoggingParam)
-	Warn(function, cid, msg string, params ...LoggingParam)
-	Error(function, cid, msg string, err error, params ...LoggingParam)
+	Debug(ctx ApplicationContext, function, msg string, params ...LoggingParam)
+	Info(ctx ApplicationContext, function, msg string, params ...LoggingParam)
+	Warn(ctx ApplicationContext, function, msg string, params ...LoggingParam)
+	Error(ctx ApplicationContext, function, msg string, err error, params ...LoggingParam)
 }
 
 type StdLogger struct {
@@ -53,23 +56,23 @@ func GetStdLogger(object string) StdLogger {
 	}
 }
 
-func (c StdLogger) Debug(function, cid, msg string, params ...LoggingParam) {
-	logger.Debug(msg, c.getFields(function, cid, params)...)
+func (c StdLogger) Debug(ctx ApplicationContext, function, msg string, params ...LoggingParam) {
+	logger.Ctx(ctx).Debug(msg, c.getFields(function, ctx.GetCorrelationID(), params)...)
 }
 
-func (c StdLogger) Info(function, cid, msg string, params ...LoggingParam) {
-	logger.Info(msg, c.getFields(function, cid, params)...)
+func (c StdLogger) Info(ctx ApplicationContext, function, msg string, params ...LoggingParam) {
+	logger.Ctx(ctx).Info(msg, c.getFields(function, ctx.GetCorrelationID(), params)...)
 }
 
-func (c StdLogger) Warn(function, cid, msg string, params ...LoggingParam) {
-	logger.Warn(msg, c.getFields(function, cid, params)...)
+func (c StdLogger) Warn(ctx ApplicationContext, function, msg string, params ...LoggingParam) {
+	logger.Ctx(ctx).Warn(msg, c.getFields(function, ctx.GetCorrelationID(), params)...)
 }
 
-func (c StdLogger) Error(function, cid, msg string, err error, params ...LoggingParam) {
-	fields := c.getFields(function, cid, params)
+func (c StdLogger) Error(ctx ApplicationContext, function, msg string, err error, params ...LoggingParam) {
+	fields := c.getFields(function, ctx.GetCorrelationID(), params)
 	fields = append(fields, zap.Error(err))
 
-	logger.Error(msg, fields...)
+	logger.Ctx(ctx).Error(msg, fields...)
 }
 
 func (c StdLogger) getFields(function, cid string, params []LoggingParam) []zap.Field {
