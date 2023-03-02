@@ -18,6 +18,7 @@ import (
 	"go-service-template/repositories/db"
 	googleMapsRepo "go-service-template/repositories/googlemaps"
 	"go-service-template/services"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 )
 
 func main() {
@@ -49,6 +50,7 @@ func main() {
 	customHTTP.CreateWebServer(
 		appCfg.AppConfig,
 		[]echo.MiddlewareFunc{ // Middlewares are run in the slice order
+			otelecho.Middleware(appCfg.AppConfig.Name),
 			echoMiddleware.Recover(),
 			httpMiddleware.CreateCorsMiddleware(config.GetCorsOriginAddressByEnv(env)),
 			httpMiddleware.CreateAppContextMiddleware(),

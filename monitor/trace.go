@@ -30,7 +30,7 @@ func RegisterTraceProvider(openTelemetryCfg config.OpenTelemetryConfig, appCfg c
 	// Register our TracerProvider as the global so any imported instrumentation in the future will default to using it.
 	otel.SetTracerProvider(tp)
 	globalTracerProvider = tp
-	otel.SetTextMapPropagator(propagation.TraceContext{})
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 }
 
 // createTracerProvider returns an OpenTelemetry TracerProvider configured to use
