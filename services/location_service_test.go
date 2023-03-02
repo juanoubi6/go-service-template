@@ -83,13 +83,13 @@ func TestLocationServiceSuite(t *testing.T) {
 func (s *LocationServiceSuite) Test_CreateLocation_Success() {
 	s.googleMapsAPIMock.On("ValidateAddress", mock.Anything, mock.Anything).Return(&googlemaps.AddressValidateMatch{}, nil)
 	s.dbFactoryMock.On("GetLocationsDB").Return(s.locationsDBMock, nil)
-	s.locationsDBMock.On("CheckLocationNameExistence", testCtx, createLocData.Name).Return(false, nil).Once()
+	s.locationsDBMock.On("CheckLocationNameExistence", mock.Anything, createLocData.Name).Return(false, nil).Once()
 
-	s.locationsDBMock.On("StartTx", testCtx).Return(nil).Once()
+	s.locationsDBMock.On("StartTx", mock.Anything).Return(nil).Once()
 	s.locationsDBMock.On("CommitTx").Return(nil).Once()
 
-	s.locationsDBMock.On("CreateLocation", testCtx, mock.Anything).Return(nil).Once()
-	s.locationsDBMock.On("CreateSubLocation", testCtx, mock.Anything).Run(func(args mock.Arguments) {
+	s.locationsDBMock.On("CreateLocation", mock.Anything, mock.Anything).Return(nil).Once()
+	s.locationsDBMock.On("CreateSubLocation", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
 		subLocation := args.Get(1).(domain.SubLocation)
 		assert.Equal(s.T(), services.DefaultSubLocationName, subLocation.Name)
 	}).Return(nil).Once()
@@ -104,7 +104,7 @@ func (s *LocationServiceSuite) Test_CreateLocation_Success() {
 func (s *LocationServiceSuite) Test_CreateLocation_FailsIfNewLocationNameIsAlreadyInUse() {
 	s.googleMapsAPIMock.On("ValidateAddress", mock.Anything, mock.Anything).Return(&googlemaps.AddressValidateMatch{}, nil)
 	s.dbFactoryMock.On("GetLocationsDB").Return(s.locationsDBMock, nil)
-	s.locationsDBMock.On("CheckLocationNameExistence", testCtx, createLocData.Name).Return(true, nil).Once()
+	s.locationsDBMock.On("CheckLocationNameExistence", mock.Anything, createLocData.Name).Return(true, nil).Once()
 
 	_, err := s.locationService.CreateLocation(testCtx, createLocData)
 
@@ -147,14 +147,14 @@ func (s *LocationServiceSuite) Test_UpdateLocation_Success() {
 	}
 
 	s.dbFactoryMock.On("GetLocationsDB").Return(s.locationsDBMock, nil)
-	s.locationsDBMock.On("StartTx", testCtx).Return(nil).Once()
+	s.locationsDBMock.On("StartTx", mock.Anything).Return(nil).Once()
 	s.locationsDBMock.On("CommitTx").Return(nil).Once()
 
-	s.locationsDBMock.On("GetLocationByID", testCtx, updateLocData.ID).Return(&existingLocation, nil).Once()
-	s.locationsDBMock.On("CheckLocationNameExistence", testCtx, updateLocData.Name).Return(false, nil).Once()
+	s.locationsDBMock.On("GetLocationByID", mock.Anything, updateLocData.ID).Return(&existingLocation, nil).Once()
+	s.locationsDBMock.On("CheckLocationNameExistence", mock.Anything, updateLocData.Name).Return(false, nil).Once()
 
 	s.googleMapsAPIMock.On("ValidateAddress", mock.Anything, mock.Anything).Return(&googlemaps.AddressValidateMatch{}, nil)
-	s.locationsDBMock.On("UpdateLocation", testCtx, mock.Anything).Run(func(args mock.Arguments) {
+	s.locationsDBMock.On("UpdateLocation", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
 		updatedLocation := args.Get(1).(domain.Location)
 		assert.Equal(s.T(), updateLocData.Name, updatedLocation.Name)
 	}).Return(nil).Once()
@@ -168,11 +168,11 @@ func (s *LocationServiceSuite) Test_UpdateLocation_Success() {
 
 func (s *LocationServiceSuite) Test_UpdateLocation_FailsIfAddressValidationCannotFindAddress() {
 	s.dbFactoryMock.On("GetLocationsDB").Return(s.locationsDBMock, nil)
-	s.locationsDBMock.On("StartTx", testCtx).Return(nil).Once()
+	s.locationsDBMock.On("StartTx", mock.Anything).Return(nil).Once()
 	s.locationsDBMock.On("RollbackTx").Return(nil).Once()
 
-	s.locationsDBMock.On("GetLocationByID", testCtx, updateLocData.ID).Return(&domain.Location{Name: "OldName"}, nil).Once()
-	s.locationsDBMock.On("CheckLocationNameExistence", testCtx, updateLocData.Name).Return(false, nil).Once()
+	s.locationsDBMock.On("GetLocationByID", mock.Anything, updateLocData.ID).Return(&domain.Location{Name: "OldName"}, nil).Once()
+	s.locationsDBMock.On("CheckLocationNameExistence", mock.Anything, updateLocData.Name).Return(false, nil).Once()
 	s.googleMapsAPIMock.On("ValidateAddress", mock.Anything, mock.Anything).Return(nil, nil)
 
 	_, err := s.locationService.UpdateLocation(testCtx, updateLocData)
@@ -184,11 +184,11 @@ func (s *LocationServiceSuite) Test_UpdateLocation_FailsIfAddressValidationCanno
 
 func (s *LocationServiceSuite) Test_UpdateLocation_FailsIfUpdatedLocationNameIsAlreadyInUse() {
 	s.dbFactoryMock.On("GetLocationsDB").Return(s.locationsDBMock, nil)
-	s.locationsDBMock.On("StartTx", testCtx).Return(nil).Once()
+	s.locationsDBMock.On("StartTx", mock.Anything).Return(nil).Once()
 	s.locationsDBMock.On("RollbackTx").Return(nil).Once()
 
-	s.locationsDBMock.On("GetLocationByID", testCtx, updateLocData.ID).Return(&domain.Location{Name: "OldName"}, nil).Once()
-	s.locationsDBMock.On("CheckLocationNameExistence", testCtx, updateLocData.Name).Return(true, nil).Once()
+	s.locationsDBMock.On("GetLocationByID", mock.Anything, updateLocData.ID).Return(&domain.Location{Name: "OldName"}, nil).Once()
+	s.locationsDBMock.On("CheckLocationNameExistence", mock.Anything, updateLocData.Name).Return(true, nil).Once()
 
 	_, err := s.locationService.UpdateLocation(testCtx, updateLocData)
 
@@ -199,10 +199,10 @@ func (s *LocationServiceSuite) Test_UpdateLocation_FailsIfUpdatedLocationNameIsA
 
 func (s *LocationServiceSuite) Test_UpdateLocation_FailsIfLocationCannotBeFound() {
 	s.dbFactoryMock.On("GetLocationsDB").Return(s.locationsDBMock, nil)
-	s.locationsDBMock.On("StartTx", testCtx).Return(nil).Once()
+	s.locationsDBMock.On("StartTx", mock.Anything).Return(nil).Once()
 	s.locationsDBMock.On("RollbackTx").Return(nil).Once()
 
-	s.locationsDBMock.On("GetLocationByID", testCtx, updateLocData.ID).Return(nil, nil).Once()
+	s.locationsDBMock.On("GetLocationByID", mock.Anything, updateLocData.ID).Return(nil, nil).Once()
 
 	_, err := s.locationService.UpdateLocation(testCtx, updateLocData)
 
@@ -227,7 +227,7 @@ func (s *LocationServiceSuite) Test_GetLocationByID_Success() {
 	locationID := uuid.New().String()
 
 	s.dbFactoryMock.On("GetLocationsDB").Return(s.locationsDBMock, nil)
-	s.locationsDBMock.On("GetLocationByID", testCtx, locationID).Return(&domain.Location{ID: locationID}, nil).Once()
+	s.locationsDBMock.On("GetLocationByID", mock.Anything, locationID).Return(&domain.Location{ID: locationID}, nil).Once()
 
 	location, err := s.locationService.GetLocationByID(testCtx, locationID)
 
