@@ -101,7 +101,7 @@ func (s *LocationControllerSuite) Test_createLocation_Success() {
 		assert.Equal(s.T(), "someName", request.Name)
 	}).Return(domain.Location{ID: "1"}, nil)
 
-	_ = s.createLocationEP.Handler(s.echoRouter.NewContext(req, w))
+	assert.Nil(s.T(), s.createLocationEP.Handler(s.echoRouter.NewContext(req, w)))
 
 	var response struct {
 		Data domain.Location `json:"data"`
@@ -121,8 +121,7 @@ func (s *LocationControllerSuite) Test_createLocation_Returns400OnInvalidBody() 
 
 	req, _ := http.NewRequest(http.MethodPost, "/v1/locations", bytes.NewBuffer([]byte("invalid body")))
 
-	_ = s.createLocationEP.Handler(s.echoRouter.NewContext(req, w))
-
+	assert.Nil(s.T(), s.createLocationEP.Handler(s.echoRouter.NewContext(req, w)))
 	assert.Equal(s.T(), http.StatusBadRequest, w.Code)
 	s.assertMockExpectations()
 }
@@ -139,7 +138,8 @@ func (s *LocationControllerSuite) Test_updateLocation_Success() {
 	echoCtx.SetPath(s.updateLocationEP.Path)
 	echoCtx.SetParamNames("locationID")
 	echoCtx.SetParamValues(mockUpdateLocationRequest.ID)
-	_ = s.updateLocationEP.Handler(echoCtx)
+
+	assert.Nil(s.T(), s.updateLocationEP.Handler(echoCtx))
 
 	var response struct {
 		Data domain.Location `json:"data"`
@@ -163,8 +163,8 @@ func (s *LocationControllerSuite) Test_updateLocation_Returns400OnInvalidBody() 
 	echoCtx.SetPath(s.updateLocationEP.Path)
 	echoCtx.SetParamNames("locationID")
 	echoCtx.SetParamValues("uuid")
-	_ = s.updateLocationEP.Handler(echoCtx)
 
+	assert.Nil(s.T(), s.updateLocationEP.Handler(echoCtx))
 	assert.Equal(s.T(), http.StatusBadRequest, w.Code)
 	s.assertMockExpectations()
 }
@@ -179,8 +179,8 @@ func (s *LocationControllerSuite) Test_updateLocation_Returns400OnLocationIDMism
 	echoCtx.SetPath(s.updateLocationEP.Path)
 	echoCtx.SetParamNames("locationID")
 	echoCtx.SetParamValues("differentUUID")
-	_ = s.updateLocationEP.Handler(echoCtx)
 
+	assert.Nil(s.T(), s.updateLocationEP.Handler(echoCtx))
 	assert.Equal(s.T(), http.StatusBadRequest, w.Code)
 	s.assertMockExpectations()
 }
@@ -209,7 +209,7 @@ func (s *LocationControllerSuite) Test_getPaginatedLocations_Success() {
 		}, nil,
 	)
 
-	_ = s.getPaginatedLocationsEP.Handler(s.echoRouter.NewContext(req, w))
+	assert.Nil(s.T(), s.getPaginatedLocationsEP.Handler(s.echoRouter.NewContext(req, w)))
 
 	var response struct {
 		Data domain.CursorPage[domain.Location] `json:"data"`
@@ -236,8 +236,7 @@ func (s *LocationControllerSuite) Test_getPaginatedLocations_Returns400OnEmptyCu
 		http.NoBody,
 	)
 
-	_ = s.getPaginatedLocationsEP.Handler(s.echoRouter.NewContext(req, w))
-
+	assert.Nil(s.T(), s.getPaginatedLocationsEP.Handler(s.echoRouter.NewContext(req, w)))
 	assert.Equal(s.T(), http.StatusBadRequest, w.Code)
 	s.assertMockExpectations()
 }
@@ -251,8 +250,7 @@ func (s *LocationControllerSuite) Test_getPaginatedLocations_Returns400OnInvalid
 		http.NoBody,
 	)
 
-	_ = s.getPaginatedLocationsEP.Handler(s.echoRouter.NewContext(req, w))
-
+	assert.Nil(s.T(), s.getPaginatedLocationsEP.Handler(s.echoRouter.NewContext(req, w)))
 	assert.Equal(s.T(), http.StatusBadRequest, w.Code)
 	s.assertMockExpectations()
 }
@@ -266,8 +264,7 @@ func (s *LocationControllerSuite) Test_getPaginatedLocations_Returns400OnInvalid
 		http.NoBody,
 	)
 
-	_ = s.getPaginatedLocationsEP.Handler(s.echoRouter.NewContext(req, w))
-
+	assert.Nil(s.T(), s.getPaginatedLocationsEP.Handler(s.echoRouter.NewContext(req, w)))
 	assert.Equal(s.T(), http.StatusBadRequest, w.Code)
 	s.assertMockExpectations()
 }
@@ -285,7 +282,8 @@ func (s *LocationControllerSuite) Test_getLocationDetails_Success() {
 	echoCtx.SetPath(s.getLocationDetailsEP.Path)
 	echoCtx.SetParamNames("locationID")
 	echoCtx.SetParamValues(locationID)
-	_ = s.getLocationDetailsEP.Handler(echoCtx)
+
+	assert.Nil(s.T(), s.getLocationDetailsEP.Handler(echoCtx))
 
 	var response struct {
 		Data domain.Location `json:"data"`
@@ -313,8 +311,8 @@ func (s *LocationControllerSuite) Test_getLocationDetails_Returns404WhenLocation
 	echoCtx.SetPath(s.getLocationDetailsEP.Path)
 	echoCtx.SetParamNames("locationID")
 	echoCtx.SetParamValues(locationID)
-	_ = s.getLocationDetailsEP.Handler(echoCtx)
 
+	assert.Nil(s.T(), s.getLocationDetailsEP.Handler(echoCtx))
 	assert.Equal(s.T(), http.StatusNotFound, w.Code)
 	s.assertMockExpectations()
 }
