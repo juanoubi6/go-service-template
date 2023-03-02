@@ -16,28 +16,28 @@ import (
 	"time"
 )
 
-// DAL = Data Access Layer
-type DALFactory struct {
+// nolint
+type DBFactory struct {
 	locationsDBConnection *sql.DB
 }
 
-func NewDALFactory(dbConfig config.DBConfig) *DALFactory {
+func NewDBFactory(dbConfig config.DBConfig) *DBFactory {
 	conn, err := connectDB(dbConfig.LocationsDatabaseConnection, dbConfig)
 	if err != nil {
 		panic(err)
 	}
 
-	return &DALFactory{
+	return &DBFactory{
 		locationsDBConnection: conn,
 	}
 }
 
-func (df *DALFactory) GetLocationsDB() (repositories.LocationsDB, error) {
+func (df *DBFactory) GetLocationsDB() (repositories.LocationsDB, error) {
 	if df.locationsDBConnection == nil {
 		return nil, errors.New("could not create LocationsDBDal because the DB connection does not exist")
 	}
 
-	return &LocationsDAL{
+	return &LocationsRepository{
 		TxDBContext:  CreateTxDBContext(df.locationsDBConnection),
 		queryBuilder: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
 	}, nil

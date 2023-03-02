@@ -37,7 +37,7 @@ func main() {
 	structValidator := validator.New()
 
 	// Create repositories
-	dalFactory := db.NewDALFactory(appCfg.DBConfig)
+	dalFactory := db.NewDBFactory(appCfg.DBConfig)
 	googleMapsAPI := googleMapsRepo.NewGoogleMapsRepository(customHTTPClient)
 
 	// Create services

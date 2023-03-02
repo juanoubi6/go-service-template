@@ -9,13 +9,13 @@ import (
 	"go.opentelemetry.io/otel/codes"
 )
 
-type LocationsDAL struct {
+type LocationsRepository struct {
 	queryBuilder sq.StatementBuilderType
 	*TxDBContext
 }
 
-func (dal *LocationsDAL) CreateLocation(ctx monitor.ApplicationContext, location domain.Location) error {
-	ctx, span := ctx.StartSpan("LocationsDAL.CreateLocation")
+func (dal *LocationsRepository) CreateLocation(ctx monitor.ApplicationContext, location domain.Location) error {
+	ctx, span := ctx.StartSpan("LocationsRepository.CreateLocation")
 	defer span.End()
 
 	_, err := dal.Exec(
@@ -53,8 +53,8 @@ func (dal *LocationsDAL) CreateLocation(ctx monitor.ApplicationContext, location
 	return nil
 }
 
-func (dal *LocationsDAL) UpdateLocation(ctx monitor.ApplicationContext, location domain.Location) error {
-	ctx, span := ctx.StartSpan("LocationsDAL.UpdateLocation")
+func (dal *LocationsRepository) UpdateLocation(ctx monitor.ApplicationContext, location domain.Location) error {
+	ctx, span := ctx.StartSpan("LocationsRepository.UpdateLocation")
 	defer span.End()
 
 	_, err := dal.Exec(
@@ -91,8 +91,8 @@ func (dal *LocationsDAL) UpdateLocation(ctx monitor.ApplicationContext, location
 	return nil
 }
 
-func (dal *LocationsDAL) CreateSubLocation(ctx monitor.ApplicationContext, subLocation domain.SubLocation) error {
-	ctx, span := ctx.StartSpan("LocationsDAL.CreateSubLocation")
+func (dal *LocationsRepository) CreateSubLocation(ctx monitor.ApplicationContext, subLocation domain.SubLocation) error {
+	ctx, span := ctx.StartSpan("LocationsRepository.CreateSubLocation")
 	defer span.End()
 
 	_, err := dal.Exec(
@@ -108,15 +108,15 @@ func (dal *LocationsDAL) CreateSubLocation(ctx monitor.ApplicationContext, subLo
 	return err
 }
 
-func (dal *LocationsDAL) GetLocationByID(ctx monitor.ApplicationContext, id string) (*domain.Location, error) {
-	ctx, span := ctx.StartSpan("LocationsDAL.GetLocationByID")
+func (dal *LocationsRepository) GetLocationByID(ctx monitor.ApplicationContext, id string) (*domain.Location, error) {
+	ctx, span := ctx.StartSpan("LocationsRepository.GetLocationByID")
 	defer span.End()
 
 	return dal.parseLocationFromRow(dal.getDBReader().QueryRowContext(ctx, GetLocationByID, id))
 }
 
-func (dal *LocationsDAL) CheckLocationNameExistence(ctx monitor.ApplicationContext, name string) (bool, error) {
-	ctx, span := ctx.StartSpan("LocationsDAL.CheckLocationNameExistence")
+func (dal *LocationsRepository) CheckLocationNameExistence(ctx monitor.ApplicationContext, name string) (bool, error) {
+	ctx, span := ctx.StartSpan("LocationsRepository.CheckLocationNameExistence")
 	defer span.End()
 
 	var locationID string
@@ -133,8 +133,8 @@ func (dal *LocationsDAL) CheckLocationNameExistence(ctx monitor.ApplicationConte
 }
 
 // nolint
-func (dal *LocationsDAL) GetPaginatedLocations(ctx monitor.ApplicationContext, filters domain.LocationsFilters) (domain.CursorPage[domain.Location], error) {
-	ctx, span := ctx.StartSpan("LocationsDAL.GetPaginatedLocations")
+func (dal *LocationsRepository) GetPaginatedLocations(ctx monitor.ApplicationContext, filters domain.LocationsFilters) (domain.CursorPage[domain.Location], error) {
+	ctx, span := ctx.StartSpan("LocationsRepository.GetPaginatedLocations")
 	defer span.End()
 
 	var result domain.CursorPage[domain.Location]
@@ -234,7 +234,7 @@ func (dal *LocationsDAL) GetPaginatedLocations(ctx monitor.ApplicationContext, f
 }
 
 // nolint
-func (dal *LocationsDAL) parseLocationFromRow(row *sql.Row) (*domain.Location, error) {
+func (dal *LocationsRepository) parseLocationFromRow(row *sql.Row) (*domain.Location, error) {
 	var location domain.Location
 
 	if err := row.Scan(

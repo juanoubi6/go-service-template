@@ -59,7 +59,7 @@ var (
 
 type LocationsDALSuite struct {
 	suite.Suite
-	dal     *LocationsDAL
+	repo    *LocationsRepository
 	db      *sql.DB
 	sqlMock sqlmock.Sqlmock
 }
@@ -72,7 +72,7 @@ func (s *LocationsDALSuite) SetupTest() {
 
 	s.db = db
 	s.sqlMock = sqmock
-	s.dal = &LocationsDAL{
+	s.repo = &LocationsRepository{
 		TxDBContext:  CreateTxDBContext(db),
 		queryBuilder: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
 	}
@@ -105,7 +105,7 @@ func (s *LocationsDALSuite) Test_CreateLocation_Success() {
 		testLocation.Information.Longitude,
 	).WillReturnResult(sqlmock.NewResult(1, 1))
 
-	err := s.dal.CreateLocation(mockCtx, testLocation)
+	err := s.repo.CreateLocation(mockCtx, testLocation)
 
 	assert.Nil(s.T(), err)
 	if err = s.sqlMock.ExpectationsWereMet(); err != nil {
@@ -122,7 +122,7 @@ func (s *LocationsDALSuite) Test_CreateSubLocation_Success() {
 		subLocation.Active,
 	).WillReturnResult(sqlmock.NewResult(1, 1))
 
-	err := s.dal.CreateSubLocation(mockCtx, subLocation)
+	err := s.repo.CreateSubLocation(mockCtx, subLocation)
 
 	assert.Nil(s.T(), err)
 	if err = s.sqlMock.ExpectationsWereMet(); err != nil {
@@ -152,7 +152,7 @@ func (s *LocationsDALSuite) Test_UpdateLocation_Success() {
 		testLocation.Information.ID,
 	).WillReturnResult(sqlmock.NewResult(1, 1))
 
-	err := s.dal.UpdateLocation(mockCtx, testLocation)
+	err := s.repo.UpdateLocation(mockCtx, testLocation)
 
 	assert.Nil(s.T(), err)
 	if err = s.sqlMock.ExpectationsWereMet(); err != nil {
@@ -179,7 +179,7 @@ func (s *LocationsDALSuite) Test_GetLocationByID_Success() {
 		),
 	)
 
-	location, err := s.dal.GetLocationByID(mockCtx, locationID)
+	location, err := s.repo.GetLocationByID(mockCtx, locationID)
 
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), locationID, location.ID)
@@ -196,7 +196,7 @@ func (s *LocationsDALSuite) Test_CheckLocationNameExistence_ReturnsTrueIfNameExi
 		sqlmock.NewRows([]string{"id"}).AddRow(uuid.New().String()),
 	)
 
-	exists, err := s.dal.CheckLocationNameExistence(mockCtx, existingName)
+	exists, err := s.repo.CheckLocationNameExistence(mockCtx, existingName)
 
 	assert.Nil(s.T(), err)
 	assert.True(s.T(), exists)
@@ -210,7 +210,7 @@ func (s *LocationsDALSuite) Test_CheckLocationNameExistence_ReturnsFalseIfNameDo
 		sqlmock.NewRows([]string{}),
 	)
 
-	exists, err := s.dal.CheckLocationNameExistence(mockCtx, notExistingName)
+	exists, err := s.repo.CheckLocationNameExistence(mockCtx, notExistingName)
 
 	assert.Nil(s.T(), err)
 	assert.False(s.T(), exists)
@@ -270,7 +270,7 @@ func (s *LocationsDALSuite) Test_GetPaginatedLocations_SuccessOnNextDirection() 
 		),
 	)
 
-	resp, err := s.dal.GetPaginatedLocations(mockCtx, filters)
+	resp, err := s.repo.GetPaginatedLocations(mockCtx, filters)
 
 	assert.Nil(s.T(), err)
 	assert.Nil(s.T(), resp.NextPage)
@@ -333,7 +333,7 @@ func (s *LocationsDALSuite) Test_GetPaginatedLocations_SuccessOnPrevDirection() 
 		),
 	)
 
-	resp, err := s.dal.GetPaginatedLocations(mockCtx, filters)
+	resp, err := s.repo.GetPaginatedLocations(mockCtx, filters)
 
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), "locName", *resp.NextPage)
@@ -396,7 +396,7 @@ func (s *LocationsDALSuite) Test_GetPaginatedLocations_SuccessOnEmptyCursor() {
 		),
 	)
 
-	resp, err := s.dal.GetPaginatedLocations(mockCtx, filters)
+	resp, err := s.repo.GetPaginatedLocations(mockCtx, filters)
 
 	assert.Nil(s.T(), err)
 	assert.Nil(s.T(), resp.NextPage)
