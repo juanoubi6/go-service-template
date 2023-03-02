@@ -3,6 +3,7 @@ package middleware
 import (
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
 	customHTTP "go-service-template/http"
+	"net/http"
 )
 
 func CreateCorsMiddleware(allowedOrigins []string) customHTTP.Middleware {
@@ -16,7 +17,7 @@ func CreateCorsMiddleware(allowedOrigins []string) customHTTP.Middleware {
 
 	return echoMiddleware.CORSWithConfig(echoMiddleware.CORSConfig{
 		AllowOrigins:     allowedOrigins,
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"},
+		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete, http.MethodOptions, http.MethodHead},
 		AllowHeaders:     []string{"*"},
 		AllowCredentials: true,
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
