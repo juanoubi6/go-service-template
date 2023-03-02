@@ -55,10 +55,10 @@ func main() {
 				ignoredPaths := []string{"/health", "/metrics"}
 				return utils.ListContains[string](ignoredPaths, c.Path())
 			})),
+			echoMiddleware.Logger(),
 			echoMiddleware.Recover(),
 			httpMiddleware.CreateCorsMiddleware(config.GetCorsOriginAddressByEnv(env)),
 			httpMiddleware.CreateAppContextMiddleware(),
-			echoMiddleware.Logger(),
 		},
 		[]customHTTP.Endpoint{
 			swaggerController.SwaggerEndpoint(),
