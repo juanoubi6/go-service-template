@@ -16,6 +16,7 @@ func CreateSubscriber(kafkaCfg *sarama.Config, kafkaParams config.KafkaConfig) (
 	}
 
 	kafkaCfg.Consumer.Offsets.Initial = sarama.OffsetOldest
+	kafkaCfg.Admin.Retry.Max = kafkaParams.MaxRetries
 
 	return kafka.NewSubscriber(
 		kafka.SubscriberConfig{

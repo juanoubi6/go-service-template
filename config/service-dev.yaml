@@ -3,12 +3,10 @@ appConfig:
   name: "go-service-template"
   bindAddress: 0.0.0.0:8080
 kafkaConfig:
-  autoCreateTopics: true
   brokers:
     - localhost:9092
   consumerGroup: "go-service-template-dev"
   maxRetries: 3
-  requiredAcks: 1
 httpClientConfig:
   locationsDatabaseConnection: "url"
   maxIdleConns: 100

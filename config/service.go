@@ -28,11 +28,9 @@ type ServiceConfig struct {
 }
 
 type KafkaConfig struct {
-	Brokers          []string `yaml:"brokers"`
-	AutoCreateTopics bool     `yaml:"autoCreateTopics"`
-	ConsumerGroup    string   `yaml:"consumerGroup"`
-	MaxRetries       int      `yaml:"maxRetries"`
-	RequiredAcks     int      `yaml:"requiredAcks"`
+	Brokers       []string `yaml:"brokers"`
+	ConsumerGroup string   `yaml:"consumerGroup"`
+	MaxRetries    int      `yaml:"maxRetries"`
 }
 
 type OpenTelemetryConfig struct {

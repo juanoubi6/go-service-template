@@ -2,6 +2,11 @@ appConfig:
   version: "1.0"
   name: "go-service-template"
   bindAddress: 0.0.0.0:8080
+kafkaConfig:
+  brokers:
+    - localhost:9092
+  consumerGroup: "go-service-template-dev"
+  maxRetries: 3
 httpClientConfig:
   locationsDatabaseConnection: "url"
   maxIdleConns: 100
