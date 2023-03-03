@@ -50,6 +50,7 @@ type LocationServiceSuite struct {
 	dbFactoryMock     *mocks.DatabaseFactory
 	googleMapsAPIMock *mocks.GoogleMapsAPI
 	locationsDBMock   *mocks.LocationsDB
+	publisherMock     *mocks.MockPublisher
 	locationService   *services.LocationService
 }
 
@@ -57,23 +58,27 @@ func (s *LocationServiceSuite) SetupSuite() {
 	dbFactoryMock := new(mocks.DatabaseFactory)
 	locationsDBMock := new(mocks.LocationsDB)
 	googleMapsMock := new(mocks.GoogleMapsAPI)
+	publisherMock := new(mocks.MockPublisher)
 
-	s.locationService = services.NewLocationService(dbFactoryMock, googleMapsMock)
+	s.locationService = services.NewLocationService(dbFactoryMock, googleMapsMock, publisherMock)
 	s.dbFactoryMock = dbFactoryMock
 	s.locationsDBMock = locationsDBMock
 	s.googleMapsAPIMock = googleMapsMock
+	s.publisherMock = publisherMock
 }
 
 func (s *LocationServiceSuite) SetupTest() {
 	s.dbFactoryMock.ExpectedCalls = nil
 	s.locationsDBMock.ExpectedCalls = nil
 	s.googleMapsAPIMock.ExpectedCalls = nil
+	s.publisherMock.ExpectedCalls = nil
 }
 
 func (s *LocationServiceSuite) assertAllExpectations() {
 	s.dbFactoryMock.AssertExpectations(s.T())
 	s.locationsDBMock.AssertExpectations(s.T())
 	s.googleMapsAPIMock.AssertExpectations(s.T())
+	s.publisherMock.AssertExpectations(s.T())
 }
 
 func TestLocationServiceSuite(t *testing.T) {
@@ -93,6 +98,8 @@ func (s *LocationServiceSuite) Test_CreateLocation_Success() {
 		subLocation := args.Get(1).(domain.SubLocation)
 		assert.Equal(s.T(), services.DefaultSubLocationName, subLocation.Name)
 	}).Return(nil).Once()
+
+	s.publisherMock.On("Publish", domain.LocationsNewTopic, mock.Anything).Return(nil)
 
 	location, err := s.locationService.CreateLocation(testCtx, createLocData)
 
@@ -158,6 +165,8 @@ func (s *LocationServiceSuite) Test_UpdateLocation_Success() {
 		updatedLocation := args.Get(1).(domain.Location)
 		assert.Equal(s.T(), updateLocData.Name, updatedLocation.Name)
 	}).Return(nil).Once()
+
+	s.publisherMock.On("Publish", domain.LocationsUpdatedTopic, mock.Anything).Return(nil)
 
 	updatedLocation, err := s.locationService.UpdateLocation(testCtx, updateLocData)
 

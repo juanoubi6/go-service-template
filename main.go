@@ -7,15 +7,19 @@ package main
 
 import (
 	"context"
+	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
+	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
 	"go-service-template/config"
 	_ "go-service-template/docs"
+	"go-service-template/eventhandler"
 	customHTTP "go-service-template/http"
 	"go-service-template/http/controllers"
 	httpMiddleware "go-service-template/http/middleware"
 	"go-service-template/monitor"
+	"go-service-template/pubsub"
 	"go-service-template/repositories/db"
 	googleMapsRepo "go-service-template/repositories/googlemaps"
 	"go-service-template/services"
@@ -41,18 +45,30 @@ func main() {
 	// Create support structures
 	customHTTPClient := customHTTP.CreateCustomHTTPClient(appCfg.HTTPClientConfig)
 	structValidator := validator.New()
+	subscriber, err := pubsub.CreateSubscriber(kafka.DefaultSaramaSubscriberConfig(), appCfg.KafkaConfig)
+	if err != nil {
+		panic(err)
+	}
+	publisher, err := pubsub.CreatePublisher(kafka.DefaultSaramaSyncPublisherConfig(), appCfg.KafkaConfig)
+	if err != nil {
+		panic(err)
+	}
 
 	// Create repositories
 	dalFactory := db.NewDBFactory(appCfg.DBConfig)
 	googleMapsAPI := googleMapsRepo.NewGoogleMapsRepository(customHTTPClient)
 
 	// Create services
-	locationService := services.NewLocationService(dalFactory, googleMapsAPI)
+	locationService := services.NewLocationService(dalFactory, googleMapsAPI, publisher)
 
-	// Create controllers
+	// Create HTTP controllers
 	healthDBController := controllers.NewHealthController()
 	swaggerController := controllers.NewSwaggerController()
 	locationsController := controllers.NewLocationController(locationService, structValidator)
+
+	// Create event handlers
+	newLocationHandler := eventhandler.CreateNewLocationHandler()
+	updatedLocationHandler := eventhandler.CreateUpdatedLocationHandler()
 
 	webServer := customHTTP.CreateWebServer(
 		appCfg.AppConfig,
@@ -76,9 +92,22 @@ func main() {
 		},
 	)
 
+	eventRouter, err := pubsub.CreateRouter(nil, []pubsub.EventHandler{newLocationHandler, updatedLocationHandler}, subscriber)
+	if err != nil {
+		panic(err)
+	}
+
 	serverCtx, serverCtxCancelFn := context.WithCancel(context.Background())
 
-	go handleGracefulShutdown(serverCtx, serverCtxCancelFn, webServer)
+	// Prepare graceful shutdown handler
+	go handleGracefulShutdown(serverCtx, serverCtxCancelFn, webServer, eventRouter)
+
+	// Start event handler in new goroutine
+	go func() {
+		if routerErr := eventRouter.Run(serverCtx); routerErr != nil {
+			panic(routerErr)
+		}
+	}()
 
 	if err = webServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		panic(err)
@@ -88,7 +117,12 @@ func main() {
 	<-serverCtx.Done()
 }
 
-func handleGracefulShutdown(serverCtx context.Context, serverCancelFn context.CancelFunc, server *http.Server) {
+func handleGracefulShutdown(
+	serverCtx context.Context,
+	serverCancelFn context.CancelFunc,
+	server *http.Server,
+	router *message.Router,
+) {
 	fnName := "handleGracefulShutdown"
 	shutdownLog := monitor.GetStdLogger("gracefulShutdown")
 	appCtx := monitor.CreateAppContextFromContext(serverCtx, fnName, "")
@@ -111,10 +145,14 @@ func handleGracefulShutdown(serverCtx context.Context, serverCancelFn context.Ca
 	monitor.FlushLogger()
 	monitor.FlushTracerProvider(shutdownCtx)
 
-	// Trigger graceful shutdown
-	err := server.Shutdown(shutdownCtx)
-	if err != nil {
-		shutdownLog.Error(appCtx, fnName, "failed to shutdown server", err)
+	// Close web server
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		shutdownLog.Error(appCtx, fnName, "failed to shutdown web server", err)
+	}
+
+	// Close event handler
+	if err := router.Close(); err != nil {
+		shutdownLog.Error(appCtx, fnName, "failed to shutdown event router", err)
 	}
 
 	serverCancelFn()

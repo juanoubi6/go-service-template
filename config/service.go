@@ -24,6 +24,15 @@ type ServiceConfig struct {
 	DBConfig            DBConfig            `yaml:"dBConfig"`
 	HTTPClientConfig    HTTPClientConfig    `yaml:"httpClientConfig"`
 	OpenTelemetryConfig OpenTelemetryConfig `yaml:"openTelemetryConfig"`
+	KafkaConfig         KafkaConfig         `yaml:"kafkaConfig"`
+}
+
+type KafkaConfig struct {
+	Brokers          []string `yaml:"brokers"`
+	AutoCreateTopics bool     `yaml:"autoCreateTopics"`
+	ConsumerGroup    string   `yaml:"consumerGroup"`
+	MaxRetries       int      `yaml:"maxRetries"`
+	RequiredAcks     int      `yaml:"requiredAcks"`
 }
 
 type OpenTelemetryConfig struct {

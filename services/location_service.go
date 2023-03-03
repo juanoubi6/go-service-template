@@ -2,11 +2,13 @@ package services
 
 import (
 	"fmt"
+	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/google/uuid"
 	"go-service-template/domain"
 	"go-service-template/domain/dto"
 	"go-service-template/domain/googlemaps"
 	"go-service-template/monitor"
+	"go-service-template/pubsub"
 	"go-service-template/repositories"
 	"go-service-template/utils"
 	"go.opentelemetry.io/otel/attribute"
@@ -23,13 +25,19 @@ type LocationService struct {
 	logger        monitor.AppLogger
 	dbFactory     repositories.DatabaseFactory
 	googleMapsAPI repositories.GoogleMapsAPI
+	publisher     message.Publisher
 }
 
-func NewLocationService(dbFactory repositories.DatabaseFactory, googleMapsAPI repositories.GoogleMapsAPI) *LocationService {
+func NewLocationService(
+	dbFactory repositories.DatabaseFactory,
+	googleMapsAPI repositories.GoogleMapsAPI,
+	publisher message.Publisher,
+) *LocationService {
 	return &LocationService{
 		logger:        monitor.GetStdLogger("LocationService"),
 		dbFactory:     dbFactory,
 		googleMapsAPI: googleMapsAPI,
+		publisher:     publisher,
 	}
 }
 
@@ -74,6 +82,15 @@ func (s *LocationService) CreateLocation(ctx monitor.ApplicationContext, newLoca
 		// Create it's default sub location
 		if txErr = db.CreateSubLocation(ctx, newDefaultSubLocation); txErr != nil {
 			return fmt.Errorf("error creating new sub location: %w", txErr)
+		}
+
+		// Create and publish kafka message
+		kafkaMsg, txErr := pubsub.CreateJSONMessage(newLocation)
+		if txErr != nil {
+			return txErr
+		}
+		if txErr = s.publisher.Publish(domain.LocationsNewTopic, kafkaMsg); txErr != nil {
+			return txErr
 		}
 
 		return nil
@@ -124,6 +141,15 @@ func (s *LocationService) UpdateLocation(ctx monitor.ApplicationContext, updated
 
 		// Update location fields
 		if txErr = s.updateLocation(ctx, db, existingLocation, updatedLocationData); txErr != nil {
+			return txErr
+		}
+
+		// Create and publish kafka message
+		kafkaMsg, txErr := pubsub.CreateJSONMessage(existingLocation)
+		if txErr != nil {
+			return txErr
+		}
+		if txErr = s.publisher.Publish(domain.LocationsUpdatedTopic, kafkaMsg); txErr != nil {
 			return txErr
 		}
 
