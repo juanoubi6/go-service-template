@@ -9,6 +9,7 @@ import (
 	"context"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/ThreeDotsLabs/watermill/message"
+	watermillMiddleware "github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
@@ -92,7 +93,11 @@ func main() {
 		},
 	)
 
-	eventRouter, err := pubsub.CreateRouter(nil, []pubsub.EventHandler{newLocationHandler, updatedLocationHandler}, subscriber)
+	eventRouter, err := pubsub.CreateRouter(
+		[]message.HandlerMiddleware{watermillMiddleware.Recoverer},
+		[]pubsub.EventHandler{newLocationHandler, updatedLocationHandler},
+		subscriber,
+	)
 	if err != nil {
 		panic(err)
 	}
