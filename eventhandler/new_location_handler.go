@@ -25,7 +25,7 @@ func (c *NewLocationEventHandler) GetData() (name string, topic string) {
 
 func (c *NewLocationEventHandler) Process(msg *message.Message) error {
 	fnName := "NewLocationEventHandler.Process"
-	ctx := monitor.CreateAppContextFromContext(msg.Context(), fnName, msg.UUID)
+	ctx := monitor.CreateAppContextFromContext(msg.Context(), fnName, msg.Metadata.Get(monitor.CorrelationIDField))
 
 	var newLocation domain.Location
 	if err := json.Unmarshal(msg.Payload, &newLocation); err != nil {

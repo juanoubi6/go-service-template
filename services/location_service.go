@@ -85,7 +85,7 @@ func (s *LocationService) CreateLocation(ctx monitor.ApplicationContext, newLoca
 		}
 
 		// Create and publish kafka message
-		kafkaMsg, txErr := pubsub.CreateJSONMessage(newLocation)
+		kafkaMsg, txErr := pubsub.CreateJSONMessage(ctx, ctx.GetCorrelationID(), newLocation)
 		if txErr != nil {
 			return txErr
 		}
@@ -145,7 +145,7 @@ func (s *LocationService) UpdateLocation(ctx monitor.ApplicationContext, updated
 		}
 
 		// Create and publish kafka message
-		kafkaMsg, txErr := pubsub.CreateJSONMessage(existingLocation)
+		kafkaMsg, txErr := pubsub.CreateJSONMessage(ctx, ctx.GetCorrelationID(), existingLocation)
 		if txErr != nil {
 			return txErr
 		}
