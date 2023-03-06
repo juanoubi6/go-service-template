@@ -15,42 +15,45 @@ type AppContextMiddlewareSuite struct {
 	appContextMiddleware customHTTP.Middleware
 	testEndpoint         customHTTP.Handler
 	echoRouter           *echo.Echo
+	recorder             *httptest.ResponseRecorder
 }
 
-func (sut *AppContextMiddlewareSuite) SetupSuite() {
-	sut.appContextMiddleware = CreateAppContextMiddleware()
-	sut.testEndpoint = CreateTestEndpoint()
-	sut.echoRouter = echo.New()
+func (s *AppContextMiddlewareSuite) SetupSuite() {
+	s.appContextMiddleware = CreateAppContextMiddleware()
+	s.testEndpoint = CreateTestEndpoint()
+	s.echoRouter = echo.New()
+}
+
+func (s *AppContextMiddlewareSuite) SetupTest() {
+	s.recorder = httptest.NewRecorder()
 }
 
 func TestAppContextMiddlewareSuite(t *testing.T) {
 	suite.Run(t, new(AppContextMiddlewareSuite))
 }
 
-func (sut *AppContextMiddlewareSuite) Test_AppContextMiddleware_DecoratesRequestAppContext() {
-	res := httptest.NewRecorder()
+func (s *AppContextMiddlewareSuite) Test_AppContextMiddleware_DecoratesRequestAppContext() {
 	req, _ := http.NewRequest(http.MethodGet, "/test", http.NoBody)
 
-	wrappedTestHandler := sut.appContextMiddleware(sut.testEndpoint)
+	wrappedTestHandler := s.appContextMiddleware(s.testEndpoint)
 
-	err := wrappedTestHandler(sut.echoRouter.NewContext(req, res))
+	err := wrappedTestHandler(s.echoRouter.NewContext(req, s.recorder))
 
-	assert.Nil(sut.T(), err)
-	assert.Equal(sut.T(), http.StatusOK, res.Code)
+	assert.Nil(s.T(), err)
+	assert.Equal(s.T(), http.StatusOK, s.recorder.Code)
 }
 
-func (sut *AppContextMiddlewareSuite) Test_AppContextMiddleware_UsesCorrelationIDHeaderAsCorrelationID() {
-	res := httptest.NewRecorder()
+func (s *AppContextMiddlewareSuite) Test_AppContextMiddleware_UsesCorrelationIDHeaderAsCorrelationID() {
 	req, _ := http.NewRequest(http.MethodGet, "/test", http.NoBody)
 	req.Header.Add(CorrelationIDHeader, "value")
 
-	wrappedTestHandler := sut.appContextMiddleware(sut.testEndpoint)
+	wrappedTestHandler := s.appContextMiddleware(s.testEndpoint)
 
-	err := wrappedTestHandler(sut.echoRouter.NewContext(req, res))
+	err := wrappedTestHandler(s.echoRouter.NewContext(req, s.recorder))
 
-	assert.Nil(sut.T(), err)
-	assert.Equal(sut.T(), http.StatusOK, res.Code)
-	assert.Equal(sut.T(), "value", res.Body.String())
+	assert.Nil(s.T(), err)
+	assert.Equal(s.T(), http.StatusOK, s.recorder.Code)
+	assert.Equal(s.T(), "value", s.recorder.Body.String())
 }
 
 func CreateTestEndpoint() customHTTP.Handler {

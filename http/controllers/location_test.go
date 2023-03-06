@@ -66,9 +66,10 @@ type LocationControllerSuite struct {
 	getPaginatedLocationsEP customHTTP.Endpoint
 	getLocationDetailsEP    customHTTP.Endpoint
 	echoRouter              *echo.Echo
+	recorder                *httptest.ResponseRecorder
 }
 
-func (s *LocationControllerSuite) SetupTest() {
+func (s *LocationControllerSuite) SetupSuite() {
 	locationServiceMock := new(mocks.ILocationService)
 	controller := controllers.NewLocationController(locationServiceMock, validator.New())
 
@@ -81,6 +82,11 @@ func (s *LocationControllerSuite) SetupTest() {
 	s.echoRouter = echo.New()
 }
 
+func (s *LocationControllerSuite) SetupTest() {
+	s.locationServiceMock.ExpectedCalls = nil
+	s.recorder = httptest.NewRecorder()
+}
+
 func (s *LocationControllerSuite) assertMockExpectations() {
 	s.locationServiceMock.AssertExpectations(s.T())
 }
@@ -90,8 +96,6 @@ func TestLocationControllerSuite(t *testing.T) {
 }
 
 func (s *LocationControllerSuite) Test_createLocation_Success() {
-	w := httptest.NewRecorder()
-
 	bodyBytes, _ := json.Marshal(mockCreateLocationRequest)
 
 	req, _ := http.NewRequest(http.MethodPost, "/v1/locations", bytes.NewBuffer(bodyBytes))
@@ -99,42 +103,38 @@ func (s *LocationControllerSuite) Test_createLocation_Success() {
 	s.locationServiceMock.On("CreateLocation", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
 		request := args.Get(1).(dto.CreateLocationRequest)
 		assert.Equal(s.T(), "someName", request.Name)
-	}).Return(domain.Location{ID: "1"}, nil)
+	}).Return(domain.Location{ID: "1"}, nil).Once()
 
-	assert.Nil(s.T(), s.createLocationEP.Handler(s.echoRouter.NewContext(req, w)))
+	assert.Nil(s.T(), s.createLocationEP.Handler(s.echoRouter.NewContext(req, s.recorder)))
 
 	var response struct {
 		Data domain.Location `json:"data"`
 	}
-	err := json.Unmarshal(w.Body.Bytes(), &response)
+	err := json.Unmarshal(s.recorder.Body.Bytes(), &response)
 	if err != nil {
 		s.FailNow("could not unmarshal response body", err.Error())
 	}
 
-	assert.Equal(s.T(), http.StatusOK, w.Code)
+	assert.Equal(s.T(), http.StatusOK, s.recorder.Code)
 	assert.Equal(s.T(), "1", response.Data.ID)
 	s.assertMockExpectations()
 }
 
 func (s *LocationControllerSuite) Test_createLocation_Returns400OnInvalidBody() {
-	w := httptest.NewRecorder()
-
 	req, _ := http.NewRequest(http.MethodPost, "/v1/locations", bytes.NewBuffer([]byte("invalid body")))
 
-	assert.Nil(s.T(), s.createLocationEP.Handler(s.echoRouter.NewContext(req, w)))
-	assert.Equal(s.T(), http.StatusBadRequest, w.Code)
+	assert.Nil(s.T(), s.createLocationEP.Handler(s.echoRouter.NewContext(req, s.recorder)))
+	assert.Equal(s.T(), http.StatusBadRequest, s.recorder.Code)
 	s.assertMockExpectations()
 }
 
 func (s *LocationControllerSuite) Test_updateLocation_Success() {
-	w := httptest.NewRecorder()
-
 	bodyBytes, _ := json.Marshal(mockUpdateLocationRequest)
 	req, _ := http.NewRequest(http.MethodPut, fmt.Sprintf("/v1/locations/%v", mockUpdateLocationRequest.ID), bytes.NewBuffer(bodyBytes))
 
-	s.locationServiceMock.On("UpdateLocation", mock.Anything, mock.Anything).Return(domain.Location{ID: "1"}, nil)
+	s.locationServiceMock.On("UpdateLocation", mock.Anything, mock.Anything).Return(domain.Location{ID: "1"}, nil).Once()
 
-	echoCtx := s.echoRouter.NewContext(req, w)
+	echoCtx := s.echoRouter.NewContext(req, s.recorder)
 	echoCtx.SetPath(s.updateLocationEP.Path)
 	echoCtx.SetParamNames("locationID")
 	echoCtx.SetParamValues(mockUpdateLocationRequest.ID)
@@ -144,50 +144,44 @@ func (s *LocationControllerSuite) Test_updateLocation_Success() {
 	var response struct {
 		Data domain.Location `json:"data"`
 	}
-	err := json.Unmarshal(w.Body.Bytes(), &response)
+	err := json.Unmarshal(s.recorder.Body.Bytes(), &response)
 	if err != nil {
 		s.FailNow("could not unmarshal response body", err.Error())
 	}
 
-	assert.Equal(s.T(), http.StatusOK, w.Code)
+	assert.Equal(s.T(), http.StatusOK, s.recorder.Code)
 	assert.Equal(s.T(), "1", response.Data.ID)
 	s.assertMockExpectations()
 }
 
 func (s *LocationControllerSuite) Test_updateLocation_Returns400OnInvalidBody() {
-	w := httptest.NewRecorder()
-
 	req, _ := http.NewRequest(http.MethodPut, "/v1/locations/uuid", bytes.NewBuffer([]byte("invalid body")))
 
-	echoCtx := s.echoRouter.NewContext(req, w)
+	echoCtx := s.echoRouter.NewContext(req, s.recorder)
 	echoCtx.SetPath(s.updateLocationEP.Path)
 	echoCtx.SetParamNames("locationID")
 	echoCtx.SetParamValues("uuid")
 
 	assert.Nil(s.T(), s.updateLocationEP.Handler(echoCtx))
-	assert.Equal(s.T(), http.StatusBadRequest, w.Code)
+	assert.Equal(s.T(), http.StatusBadRequest, s.recorder.Code)
 	s.assertMockExpectations()
 }
 
 func (s *LocationControllerSuite) Test_updateLocation_Returns400OnLocationIDMismatchBetweenUrlAndPayload() {
-	w := httptest.NewRecorder()
-
 	bodyBytes, _ := json.Marshal(dto.UpdateLocationRequest{ID: "someUUID"})
 	req, _ := http.NewRequest(http.MethodPut, "/v1/locations/uuid", bytes.NewBuffer(bodyBytes))
 
-	echoCtx := s.echoRouter.NewContext(req, w)
+	echoCtx := s.echoRouter.NewContext(req, s.recorder)
 	echoCtx.SetPath(s.updateLocationEP.Path)
 	echoCtx.SetParamNames("locationID")
 	echoCtx.SetParamValues("differentUUID")
 
 	assert.Nil(s.T(), s.updateLocationEP.Handler(echoCtx))
-	assert.Equal(s.T(), http.StatusBadRequest, w.Code)
+	assert.Equal(s.T(), http.StatusBadRequest, s.recorder.Code)
 	s.assertMockExpectations()
 }
 
 func (s *LocationControllerSuite) Test_getPaginatedLocations_Success() {
-	w := httptest.NewRecorder()
-
 	req, _ := http.NewRequest(
 		http.MethodGet,
 		fmt.Sprintf("/v1/locations?limit=%v&direction=%v&name=%v&cursor=%v", controllers.DefaultLimit, domain.NextPage, LocName, CursorVal),
@@ -207,19 +201,19 @@ func (s *LocationControllerSuite) Test_getPaginatedLocations_Success() {
 			NextPage:     utils.ToPointer(NextPage),
 			PreviousPage: utils.ToPointer(PrevPage),
 		}, nil,
-	)
+	).Once()
 
-	assert.Nil(s.T(), s.getPaginatedLocationsEP.Handler(s.echoRouter.NewContext(req, w)))
+	assert.Nil(s.T(), s.getPaginatedLocationsEP.Handler(s.echoRouter.NewContext(req, s.recorder)))
 
 	var response struct {
 		Data domain.CursorPage[domain.Location] `json:"data"`
 	}
-	err := json.Unmarshal(w.Body.Bytes(), &response)
+	err := json.Unmarshal(s.recorder.Body.Bytes(), &response)
 	if err != nil {
 		s.FailNow("could not unmarshal response body", err.Error())
 	}
 
-	assert.Equal(s.T(), http.StatusOK, w.Code)
+	assert.Equal(s.T(), http.StatusOK, s.recorder.Code)
 	assert.Equal(s.T(), NextPage, *response.Data.NextPage)
 	assert.Equal(s.T(), PrevPage, *response.Data.PreviousPage)
 	assert.Equal(s.T(), controllers.DefaultLimit, response.Data.Limit)
@@ -228,57 +222,49 @@ func (s *LocationControllerSuite) Test_getPaginatedLocations_Success() {
 }
 
 func (s *LocationControllerSuite) Test_getPaginatedLocations_Returns400OnEmptyCursorAndPrevDirection() {
-	w := httptest.NewRecorder()
-
 	req, _ := http.NewRequest(
 		http.MethodGet,
 		fmt.Sprintf("/v1/locations?limit=%v&direction=%v", controllers.DefaultLimit, domain.PreviousPage),
 		http.NoBody,
 	)
 
-	assert.Nil(s.T(), s.getPaginatedLocationsEP.Handler(s.echoRouter.NewContext(req, w)))
-	assert.Equal(s.T(), http.StatusBadRequest, w.Code)
+	assert.Nil(s.T(), s.getPaginatedLocationsEP.Handler(s.echoRouter.NewContext(req, s.recorder)))
+	assert.Equal(s.T(), http.StatusBadRequest, s.recorder.Code)
 	s.assertMockExpectations()
 }
 
 func (s *LocationControllerSuite) Test_getPaginatedLocations_Returns400OnInvalidDirection() {
-	w := httptest.NewRecorder()
-
 	req, _ := http.NewRequest(
 		http.MethodGet,
 		fmt.Sprintf("/v1/locations?limit=%v&direction=%v", controllers.DefaultLimit, "invalidDirection"),
 		http.NoBody,
 	)
 
-	assert.Nil(s.T(), s.getPaginatedLocationsEP.Handler(s.echoRouter.NewContext(req, w)))
-	assert.Equal(s.T(), http.StatusBadRequest, w.Code)
+	assert.Nil(s.T(), s.getPaginatedLocationsEP.Handler(s.echoRouter.NewContext(req, s.recorder)))
+	assert.Equal(s.T(), http.StatusBadRequest, s.recorder.Code)
 	s.assertMockExpectations()
 }
 
 func (s *LocationControllerSuite) Test_getPaginatedLocations_Returns400OnInvalidLimitValue() {
-	w := httptest.NewRecorder()
-
 	req, _ := http.NewRequest(
 		http.MethodGet,
 		fmt.Sprintf("/v1/locations?limit=%v&direction=%v", "nonNumeric", domain.NextPage),
 		http.NoBody,
 	)
 
-	assert.Nil(s.T(), s.getPaginatedLocationsEP.Handler(s.echoRouter.NewContext(req, w)))
-	assert.Equal(s.T(), http.StatusBadRequest, w.Code)
+	assert.Nil(s.T(), s.getPaginatedLocationsEP.Handler(s.echoRouter.NewContext(req, s.recorder)))
+	assert.Equal(s.T(), http.StatusBadRequest, s.recorder.Code)
 	s.assertMockExpectations()
 }
 
 func (s *LocationControllerSuite) Test_getLocationDetails_Success() {
-	w := httptest.NewRecorder()
-
 	locationID := uuid.New().String()
 
 	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/v1/locations/%v", locationID), http.NoBody)
 
-	s.locationServiceMock.On("GetLocationByID", mock.Anything, locationID).Return(&domain.Location{ID: locationID}, nil)
+	s.locationServiceMock.On("GetLocationByID", mock.Anything, locationID).Return(&domain.Location{ID: locationID}, nil).Once()
 
-	echoCtx := s.echoRouter.NewContext(req, w)
+	echoCtx := s.echoRouter.NewContext(req, s.recorder)
 	echoCtx.SetPath(s.getLocationDetailsEP.Path)
 	echoCtx.SetParamNames("locationID")
 	echoCtx.SetParamValues(locationID)
@@ -288,31 +274,29 @@ func (s *LocationControllerSuite) Test_getLocationDetails_Success() {
 	var response struct {
 		Data domain.Location `json:"data"`
 	}
-	err := json.Unmarshal(w.Body.Bytes(), &response)
+	err := json.Unmarshal(s.recorder.Body.Bytes(), &response)
 	if err != nil {
 		s.FailNow("could not unmarshal response body", err.Error())
 	}
 
-	assert.Equal(s.T(), http.StatusOK, w.Code)
+	assert.Equal(s.T(), http.StatusOK, s.recorder.Code)
 	assert.Equal(s.T(), locationID, response.Data.ID)
 	s.assertMockExpectations()
 }
 
 func (s *LocationControllerSuite) Test_getLocationDetails_Returns404WhenLocationCannotBeFound() {
-	w := httptest.NewRecorder()
-
 	locationID := uuid.New().String()
 
 	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/v1/locations/%v", locationID), http.NoBody)
 
-	s.locationServiceMock.On("GetLocationByID", mock.Anything, locationID).Return(nil, nil)
+	s.locationServiceMock.On("GetLocationByID", mock.Anything, locationID).Return(nil, nil).Once()
 
-	echoCtx := s.echoRouter.NewContext(req, w)
+	echoCtx := s.echoRouter.NewContext(req, s.recorder)
 	echoCtx.SetPath(s.getLocationDetailsEP.Path)
 	echoCtx.SetParamNames("locationID")
 	echoCtx.SetParamValues(locationID)
 
 	assert.Nil(s.T(), s.getLocationDetailsEP.Handler(echoCtx))
-	assert.Equal(s.T(), http.StatusNotFound, w.Code)
+	assert.Equal(s.T(), http.StatusNotFound, s.recorder.Code)
 	s.assertMockExpectations()
 }
