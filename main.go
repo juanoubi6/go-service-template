@@ -155,7 +155,7 @@ func handleGracefulShutdown(
 		shutdownLog.Error(appCtx, fnName, "failed to shutdown web server", err)
 	}
 
-	// Close event handler
+	// Close event router
 	if err := router.Close(); err != nil {
 		shutdownLog.Error(appCtx, fnName, "failed to shutdown event router", err)
 	}
