@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	"go-service-template/domain"
@@ -17,6 +18,12 @@ const (
 	CursorQP                     = "cursor"
 	DirectionQP                  = "direction"
 	LimitQP                      = "limit"
+)
+
+var (
+	businessErr         = &domain.BusinessErr{}
+	nameAlreadyInUseErr = &domain.NameAlreadyInUseErr{}
+	addressNotValidErr  = &domain.AddressNotValidErr{}
 )
 
 type APIResponse struct {
@@ -53,8 +60,8 @@ func buildFailResponse(err error, title, correlationID string) APIResponse {
 }
 
 func httpStatusFromError(err error) int {
-	switch err.(type) {
-	case domain.NameAlreadyInUseErr, domain.AddressNotValidErr, domain.BusinessErr:
+	switch {
+	case errors.As(err, nameAlreadyInUseErr), errors.As(err, addressNotValidErr), errors.As(err, businessErr):
 		return http.StatusBadRequest
 	default:
 		return http.StatusInternalServerError
