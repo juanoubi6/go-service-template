@@ -72,7 +72,7 @@ func connectDB(connString string, dbConfig config.DBConfig) (*sql.DB, error) {
 	// Use OTEL to register query traces
 	dbPtr, err := sql.Open(driverNameWrapper, uri)
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to %s database: %s", driverName, err)
+		return nil, fmt.Errorf("failed to connect to %s database: %w", driverName, err)
 	}
 
 	if err != nil {
@@ -97,7 +97,7 @@ func connectDB(connString string, dbConfig config.DBConfig) (*sql.DB, error) {
 
 	err = dbPtr.PingContext(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("database ping failed: %v", err.Error())
+		return nil, fmt.Errorf("database ping failed: %w", err)
 	}
 
 	go pingDB(dbPtr)

@@ -6,6 +6,8 @@ import (
 	"net/http"
 )
 
+const CorsMaxAge = 300
+
 func CreateCorsMiddleware(allowedOrigins []string) customHTTP.Middleware {
 	if allowedOrigins == nil {
 		allowedOrigins = []string{"*"}
@@ -20,6 +22,6 @@ func CreateCorsMiddleware(allowedOrigins []string) customHTTP.Middleware {
 		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete, http.MethodOptions, http.MethodHead},
 		AllowHeaders:     []string{"*"},
 		AllowCredentials: true,
-		MaxAge:           300, // Maximum value not ignored by any of major browsers
+		MaxAge:           CorsMaxAge, // Maximum value not ignored by any of major browsers
 	})
 }

@@ -2,7 +2,6 @@ package pubsub
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/Shopify/sarama"
 	"go-service-template/config"
 	"go-service-template/monitor"
@@ -16,7 +15,7 @@ const MessageKey = "message_key"
 
 func CreatePublisher(kafkaCfg *sarama.Config, kafkaParams config.KafkaConfig) (message.Publisher, error) {
 	if len(kafkaParams.Brokers) == 0 {
-		return nil, errors.New("brokers slice cannot be empty")
+		return nil, ErrBrokerSliceEmpty
 	}
 
 	return kafka.NewPublisher(

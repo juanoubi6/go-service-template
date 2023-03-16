@@ -1,7 +1,6 @@
 package pubsub
 
 import (
-	"errors"
 	"github.com/Shopify/sarama"
 	"go-service-template/config"
 
@@ -12,7 +11,7 @@ import (
 
 func CreateSubscriber(kafkaCfg *sarama.Config, kafkaParams config.KafkaConfig) (message.Subscriber, error) {
 	if len(kafkaParams.Brokers) == 0 {
-		return nil, errors.New("brokers slice cannot be empty")
+		return nil, ErrBrokerSliceEmpty
 	}
 
 	kafkaCfg.Consumer.Offsets.Initial = sarama.OffsetOldest

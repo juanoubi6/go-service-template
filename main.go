@@ -7,6 +7,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/ThreeDotsLabs/watermill/message"
 	watermillMiddleware "github.com/ThreeDotsLabs/watermill/message/router/middleware"
@@ -115,7 +116,7 @@ func main() {
 		}
 	}()
 
-	if err = webServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	if err = webServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		panic(err)
 	}
 

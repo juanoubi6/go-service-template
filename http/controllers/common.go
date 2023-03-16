@@ -24,6 +24,7 @@ var (
 	businessErr         = &domain.BusinessErr{}
 	nameAlreadyInUseErr = &domain.NameAlreadyInUseErr{}
 	addressNotValidErr  = &domain.AddressNotValidErr{}
+	validationErr       = &validator.ValidationErrors{}
 )
 
 type APIResponse struct {
@@ -71,13 +72,13 @@ func httpStatusFromError(err error) int {
 func errorDetailsFromError(err error) []Detail {
 	var details []Detail
 
-	switch errT := err.(type) {
-	case validator.ValidationErrors:
-		for _, validationErr := range errT {
-			details = append(details, Detail{Message: validationErr.Error()})
+	switch {
+	case errors.As(err, validationErr):
+		for _, valErr := range err.(validator.ValidationErrors) { //nolint
+			details = append(details, Detail{Message: valErr.Error()})
 		}
 	default:
-		details = append(details, Detail{Message: errT.Error()})
+		details = append(details, Detail{Message: err.Error()})
 	}
 
 	return details
