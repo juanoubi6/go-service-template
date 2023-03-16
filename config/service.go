@@ -23,8 +23,14 @@ type ServiceConfig struct {
 	AppConfig           AppConfig           `yaml:"appConfig"`
 	DBConfig            DBConfig            `yaml:"dBConfig"`
 	HTTPClientConfig    HTTPClientConfig    `yaml:"httpClientConfig"`
+	WebServerConfig     WebServerConfig     `yaml:"webServerConfig"`
 	OpenTelemetryConfig OpenTelemetryConfig `yaml:"openTelemetryConfig"`
 	KafkaConfig         KafkaConfig         `yaml:"kafkaConfig"`
+}
+
+type WebServerConfig struct {
+	Address           string `yaml:"address"`
+	ReadHeaderTimeout string `yaml:"readHeaderTimeout"`
 }
 
 type KafkaConfig struct {
@@ -53,9 +59,8 @@ type HTTPClientConfig struct {
 }
 
 type AppConfig struct {
-	Name        string `yaml:"name"`
-	Version     string `yaml:"version"`
-	BindAddress string `yaml:"bindAddress"`
+	Name    string `yaml:"name"`
+	Version string `yaml:"version"`
 }
 
 func LoadConfig() (*ServiceConfig, error) {

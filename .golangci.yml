@@ -1,6 +1,7 @@
 run:
   timeout: 2m
   go: '1.19'
+  tests: false
   skip-dirs:
     - mocks
     - migrations
@@ -37,35 +38,86 @@ linters-settings:
 linters:
   disable-all: true
   enable:
-    - bodyclose
-    - deadcode
-    - depguard
-    - dogsled
-    - dupl
-    - errcheck
-    - funlen
-    - goconst
-    - gocritic
-    - gocyclo
-    - gofmt
-    - golint
-    - gosec
-    - gosimple
-    - govet
-    - ineffassign
-    - interfacer
-    - lll
-    - misspell
-    - nakedret
-    - scopelint
-    - staticcheck
-    - stylecheck
-    - typecheck
-    - unconvert
-    - unparam
-    - unused
-    - varcheck
-    - whitespace
+  - asasalint
+  - asciicheck
+  - bidichk
+  - bodyclose
+  - containedctx
+  - contextcheck
+  - cyclop
+  - decorder
+  - depguard
+  - dogsled
+  - dupl
+  - dupword
+  - durationcheck
+  - errcheck
+  - errchkjson
+  - errorlint
+  - execinquery
+  - exhaustive
+  - exportloopref
+  - forbidigo
+  - forcetypeassert
+  - funlen
+  - ginkgolinter
+  - gocheckcompilerdirectives
+  - gocognit
+  - goconst
+  - gocritic
+  - gocyclo
+  - godox
+  - goerr113
+  - gofmt
+  - goheader
+  - gomnd
+  - gomoddirectives
+  - gomodguard
+  - goprintffuncname
+  - gosec
+  - gosimple
+  - govet
+  - grouper
+  - importas
+  - ineffassign
+  - interfacebloat
+  - ireturn
+  - lll
+  - loggercheck
+  - maintidx
+  - makezero
+  - misspell
+  - musttag
+  - nakedret
+  - nestif
+  - nilerr
+  - nlreturn
+  - noctx
+  - nolintlint
+  - nonamedreturns
+  - nosprintfhostport
+  - prealloc
+  - predeclared
+  - promlinter
+  - reassign
+  - revive
+  - rowserrcheck
+  - sqlclosecheck
+  - staticcheck
+  - stylecheck
+  - tenv
+  - testableexamples
+  - testpackage
+  - thelper
+  - tparallel
+  - typecheck
+  - unconvert
+  - unparam
+  - unused
+  - usestdlibvars
+  - wastedassign
+  - whitespace
+  - wrapcheck
 issues:
   exclude-rules:
     - text: "File is not `gofmt`-ed with `-s`"

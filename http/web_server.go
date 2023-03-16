@@ -5,10 +5,12 @@ import (
 	"github.com/labstack/echo/v4"
 	"go-service-template/config"
 	"net/http"
+	"time"
 )
 
 func CreateWebServer(
 	appConfig config.AppConfig,
+	webServerConfig config.WebServerConfig,
 	globalMiddleware []Middleware,
 	endpoints []Endpoint,
 ) *http.Server {
@@ -26,7 +28,16 @@ func CreateWebServer(
 		router.Add(endpoint.Method, endpoint.Path, endpoint.Handler, endpoint.Middlewares...)
 	}
 
-	server := &http.Server{Addr: appConfig.BindAddress, Handler: router}
+	readHeaderTimeout, err := time.ParseDuration(webServerConfig.ReadHeaderTimeout)
+	if err != nil {
+		panic(err)
+	}
+
+	server := &http.Server{
+		Addr:              webServerConfig.Address,
+		Handler:           router,
+		ReadHeaderTimeout: readHeaderTimeout,
+	}
 
 	return server
 }
