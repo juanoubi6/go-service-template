@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	sq "github.com/Masterminds/squirrel"
 	"go-service-template/domain"
@@ -122,7 +123,7 @@ func (dal *LocationsRepository) CheckLocationNameExistence(ctx monitor.Applicati
 	var locationID string
 
 	if err := dal.getDBReader().QueryRowContext(ctx, CheckLocationNameExistence, name).Scan(&locationID); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return false, nil
 		}
 

@@ -62,7 +62,6 @@ linters:
   - exhaustive
   - exportloopref
   - forbidigo
-  - forcetypeassert
   - funlen
   - ginkgolinter
   - gocheckcompilerdirectives
@@ -85,7 +84,6 @@ linters:
   - importas
   - ineffassign
   - interfacebloat
-  - ireturn
   - lll
   - loggercheck
   - maintidx
@@ -96,8 +94,6 @@ linters:
   - nestif
   - nilerr
   - noctx
-  - nolintlint
-  - nonamedreturns
   - nosprintfhostport
   - prealloc
   - predeclared
@@ -122,6 +118,9 @@ linters:
   - whitespace
 issues:
   exclude-rules:
+    - text: "%v"
+      linters:
+        - goerr113
     - text: "File is not `gofmt`-ed with `-s`"
       linters:
         - gofmt

@@ -10,7 +10,12 @@ import (
 	"time"
 )
 
-const PremisePlaceType = "premise"
+const (
+	premisePlaceType   = "premise"
+	defaultTimeoutSecs = 5
+)
+
+var ErrGenericGoogleErr = errors.New("error from Google Maps API")
 
 type Repository struct {
 	logger     monitor.AppLogger
@@ -35,7 +40,7 @@ func (r *Repository) ValidateAddress(ctx monitor.ApplicationContext, request goo
 		Body:    request,
 	}
 
-	res, err := r.httpClient.DoWithRetry(ctx, requestValues, 5*time.Second, customHTTP.DefaultRetryAmount, time.Second, []int{})
+	res, err := r.httpClient.DoWithRetry(ctx, requestValues, defaultTimeoutSecs*time.Second, customHTTP.DefaultRetryAmount, time.Second, []int{})
 	if err != nil {
 		return nil, err
 	}
@@ -58,8 +63,7 @@ func (r *Repository) ValidateAddress(ctx monitor.ApplicationContext, request goo
 		}
 
 		// Else, log error and return
-		err = errors.New("error from Google Maps API")
-		r.logger.ErrorCtx(ctx, fnName, err.Error(), err, monitor.LoggingParam{
+		r.logger.ErrorCtx(ctx, fnName, ErrGenericGoogleErr.Error(), ErrGenericGoogleErr, monitor.LoggingParam{
 			Name:  "error_payload",
 			Value: string(res.BodyPayload),
 		})
@@ -79,7 +83,7 @@ func (r *Repository) ValidateAddress(ctx monitor.ApplicationContext, request goo
 
 	// If any match was found, return the first match whose type is "premise"
 	for _, match := range response.Matches {
-		if match.MatchType == PremisePlaceType {
+		if match.MatchType == premisePlaceType {
 			return &match, nil
 		}
 	}

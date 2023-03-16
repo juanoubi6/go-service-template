@@ -16,6 +16,11 @@ import (
 	"net/http"
 )
 
+var (
+	ErrNoLocationIDSend   = errors.New("no locationID sent in URL")
+	ErrLocationIDMismatch = errors.New("mismatch between location ID in url and the one in the request payload")
+)
+
 type LocationController struct {
 	logger          monitor.AppLogger
 	locationService services.ILocationService
@@ -125,9 +130,8 @@ func (ct *LocationController) updateLocation(c echo.Context) error {
 
 	locationID := c.Param("locationID")
 	if locationID == "" {
-		errMsg := errors.New("no locationID sent in URL")
-		ct.logger.ErrorCtx(appCtx, fnName, errMsg.Error(), errMsg)
-		return c.JSON(http.StatusBadRequest, buildFailResponse(errMsg, errMsg.Error(), appCtx.GetCorrelationID()))
+		ct.logger.ErrorCtx(appCtx, fnName, ErrNoLocationIDSend.Error(), ErrNoLocationIDSend)
+		return c.JSON(http.StatusBadRequest, buildFailResponse(ErrNoLocationIDSend, ErrNoLocationIDSend.Error(), appCtx.GetCorrelationID()))
 	}
 
 	updateLocationRequest, err := parseAndValidateBody[dto.UpdateLocationRequest](c.Request().Body, ct.validator)
@@ -137,9 +141,8 @@ func (ct *LocationController) updateLocation(c echo.Context) error {
 	}
 
 	if locationID != updateLocationRequest.ID {
-		errMsg := errors.New("mismatch between location ID in url and the one in the request payload")
-		ct.logger.ErrorCtx(appCtx, fnName, errMsg.Error(), errMsg)
-		return c.JSON(http.StatusBadRequest, buildFailResponse(errMsg, errMsg.Error(), appCtx.GetCorrelationID()))
+		ct.logger.ErrorCtx(appCtx, fnName, ErrLocationIDMismatch.Error(), ErrLocationIDMismatch)
+		return c.JSON(http.StatusBadRequest, buildFailResponse(ErrLocationIDMismatch, ErrLocationIDMismatch.Error(), appCtx.GetCorrelationID()))
 	}
 
 	location, err := ct.locationService.UpdateLocation(appCtx, updateLocationRequest)
@@ -184,9 +187,8 @@ func (ct *LocationController) getLocationDetails(c echo.Context) error {
 
 	locationID := c.Param("locationID")
 	if locationID == "" {
-		errMsg := errors.New("no locationID sent in URL")
-		ct.logger.ErrorCtx(appCtx, fnName, errMsg.Error(), errMsg)
-		return c.JSON(http.StatusBadRequest, buildFailResponse(errMsg, errMsg.Error(), appCtx.GetCorrelationID()))
+		ct.logger.ErrorCtx(appCtx, fnName, ErrNoLocationIDSend.Error(), ErrNoLocationIDSend)
+		return c.JSON(http.StatusBadRequest, buildFailResponse(ErrNoLocationIDSend, ErrNoLocationIDSend.Error(), appCtx.GetCorrelationID()))
 	}
 
 	location, err := ct.locationService.GetLocationByID(appCtx, locationID)

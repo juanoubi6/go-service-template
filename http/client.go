@@ -17,13 +17,18 @@ import (
 )
 
 const (
-	MaxIdleConns           = 100
-	MaxConnsPerHost        = 100
-	MaxIdleConnsPerHost    = 50
-	IdleConnTimeoutSeconds = 90
-	RequestTimeoutSeconds  = 30
-	DefaultRetryAmount     = 3
+	DefaultMaxIdleConns           = 100
+	DefaultMaxConnsPerHost        = 100
+	DefaultMaxIdleConnsPerHost    = 50
+	DefaultIdleConnTimeoutSeconds = 90
+	DefaultRequestTimeoutSeconds  = 30
+	DefaultRetryAmount            = 3
+	DefaultDialerTimeoutSec       = 30
+	DefaultDialerKeepAliveSec     = 30
+	DefaultTLSHandshakeSec        = 10
 )
+
+var ErrRetryAmountExceeded = errors.New("failed to execute request, retry amount exceeded")
 
 type CustomHTTPClient interface {
 	Do(ctx monitor.ApplicationContext, requestValues RequestValues) (CustomHTTPResponse, error)
@@ -72,19 +77,19 @@ func CreateCustomHTTPClient(cfg config.HTTPClientConfig) *CustomClient {
 }
 
 func buildClient(cfg config.HTTPClientConfig) *http.Client {
-	var maxIdleConns = config.GetIntValueOrDefault(cfg.MaxIdleConns, MaxIdleConns)
-	var maxConnsPerHost = config.GetIntValueOrDefault(cfg.MaxConnsPerHost, MaxConnsPerHost)
-	var maxIdleConnsPerHost = config.GetIntValueOrDefault(cfg.MaxIdleConnsPerHost, MaxIdleConnsPerHost)
-	var idleConnTimeoutSeconds = config.GetIntValueOrDefault(cfg.IdleConnTimeoutSeconds, IdleConnTimeoutSeconds)
-	var requestTimeoutSeconds = config.GetIntValueOrDefault(cfg.RequestTimeoutSeconds, RequestTimeoutSeconds)
+	var maxIdleConns = config.GetIntValueOrDefault(cfg.MaxIdleConns, DefaultMaxIdleConns)
+	var maxConnsPerHost = config.GetIntValueOrDefault(cfg.MaxConnsPerHost, DefaultMaxConnsPerHost)
+	var maxIdleConnsPerHost = config.GetIntValueOrDefault(cfg.MaxIdleConnsPerHost, DefaultMaxIdleConnsPerHost)
+	var idleConnTimeoutSeconds = config.GetIntValueOrDefault(cfg.IdleConnTimeoutSeconds, DefaultIdleConnTimeoutSeconds)
+	var requestTimeoutSeconds = config.GetIntValueOrDefault(cfg.RequestTimeoutSeconds, DefaultRequestTimeoutSeconds)
 
 	transport := http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		DialContext: (&net.Dialer{
-			Timeout:   30 * time.Second,
-			KeepAlive: 30 * time.Second,
+			Timeout:   DefaultDialerTimeoutSec * time.Second,
+			KeepAlive: DefaultDialerKeepAliveSec * time.Second,
 		}).DialContext,
-		TLSHandshakeTimeout: 10 * time.Second,
+		TLSHandshakeTimeout: DefaultTLSHandshakeSec * time.Second,
 		MaxIdleConns:        maxIdleConns,
 		MaxConnsPerHost:     maxConnsPerHost,
 		MaxIdleConnsPerHost: maxIdleConnsPerHost,
@@ -167,7 +172,7 @@ func (cli *CustomClient) DoWithRetry(
 		return CustomHTTPResponse{}, fmt.Errorf("failed to execute request, unexpected error. Error: %w", err)
 	}
 	if attempts == 0 {
-		return CustomHTTPResponse{}, errors.New("failed to execute request, retry amount exceeded")
+		return CustomHTTPResponse{}, ErrRetryAmountExceeded
 	}
 
 	return cli.handleResponse(ctx, resp, fnName)

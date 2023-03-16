@@ -3,7 +3,6 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/go-playground/validator/v10"
 	"go-service-template/domain"
 	"go-service-template/utils"
@@ -25,6 +24,11 @@ var (
 	nameAlreadyInUseErr = &domain.NameAlreadyInUseErr{}
 	addressNotValidErr  = &domain.AddressNotValidErr{}
 	validationErr       = &validator.ValidationErrors{}
+
+	ErrNoDirectionQueryParam  = errors.New("'direction' query param not provided")
+	ErrInitialCursorDirection = errors.New("if the cursor is empty, the only allowed direction value is '" + domain.NextPage + "'")
+	ErrInvalidLimitValue      = errors.New("invalid limit value")
+	ErrInvalidDirectionValue  = errors.New("invalid direction value")
 )
 
 type APIResponse struct {
@@ -110,7 +114,7 @@ func buildCursorPaginationFilters(req *http.Request) (domain.CursorPaginationFil
 	if limit, ok := queryString[LimitQP]; ok {
 		limitVal, err := strconv.Atoi(limit[0])
 		if err != nil {
-			return cursorPagFilters, fmt.Errorf("invalid limit value: %v", limit[0])
+			return cursorPagFilters, ErrInvalidLimitValue
 		}
 		cursorPagFilters.Limit = limitVal
 	} else {
@@ -121,15 +125,15 @@ func buildCursorPaginationFilters(req *http.Request) (domain.CursorPaginationFil
 		if utils.ListContains([]string{domain.PreviousPage, domain.NextPage}, directionVal[0]) {
 			cursorPagFilters.Direction = directionVal[0]
 		} else {
-			return cursorPagFilters, fmt.Errorf("invalid direction value: %v", directionVal[0])
+			return cursorPagFilters, ErrInvalidDirectionValue
 		}
 	} else {
-		return cursorPagFilters, fmt.Errorf("'direction' query param not provided")
+		return cursorPagFilters, ErrNoDirectionQueryParam
 	}
 
 	// Validate initial cursor
 	if cursorPagFilters.Cursor == "" && cursorPagFilters.Direction != domain.NextPage {
-		return cursorPagFilters, fmt.Errorf("if the cursor is empty, the only allowed direction value is '%v'", domain.NextPage)
+		return cursorPagFilters, ErrInitialCursorDirection
 	}
 
 	return cursorPagFilters, nil

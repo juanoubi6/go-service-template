@@ -16,6 +16,13 @@ import (
 	"time"
 )
 
+const (
+	DefaultMaxOpenConns       = 10
+	DefaultMaxIdleConns       = 10
+	DefaultConnMaxLifetimeMin = 60
+	DefaultPingSec            = 60
+)
+
 type Factory struct {
 	locationsDBConnection *sql.DB
 }
@@ -81,18 +88,18 @@ func connectDB(connString string, dbConfig config.DBConfig) (*sql.DB, error) {
 
 	dbPtr.SetMaxOpenConns(dbConfig.ConnMaxIdleTime)
 	if config.ServiceConf.DBConfig.ConnMaxIdleTime == 0 {
-		dbPtr.SetMaxOpenConns(10)
+		dbPtr.SetMaxOpenConns(DefaultMaxOpenConns)
 	}
 	dbPtr.SetMaxIdleConns(dbConfig.MaxIdleConns)
 	if config.ServiceConf.DBConfig.MaxIdleConns == 0 {
-		dbPtr.SetMaxIdleConns(10)
+		dbPtr.SetMaxIdleConns(DefaultMaxIdleConns)
 	}
 	dbPtr.SetConnMaxLifetime(time.Minute * time.Duration(dbConfig.ConnMaxLifetime))
 	if config.ServiceConf.DBConfig.ConnMaxLifetime == 0 {
-		dbPtr.SetConnMaxLifetime(time.Minute * 60)
+		dbPtr.SetConnMaxLifetime(time.Minute * DefaultConnMaxLifetimeMin)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*60)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*DefaultPingSec)
 	defer cancel()
 
 	err = dbPtr.PingContext(ctx)
@@ -111,12 +118,12 @@ func pingDB(dbPtr *sql.DB) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			pingDBLogger.Error("pingDB", "", "caught panic in pingDB goroutine", fmt.Errorf("%v", r))
+			pingDBLogger.Error("pingDB", "", "caught panic in pingDB goroutine", r.(error))
 		}
 	}()
 
 	pingFn := func() {
-		timeoutCtx, cancel := context.WithTimeout(context.Background(), time.Second*60)
+		timeoutCtx, cancel := context.WithTimeout(context.Background(), time.Second*DefaultPingSec)
 		defer cancel()
 
 		err := dbPtr.PingContext(timeoutCtx)

@@ -34,6 +34,8 @@ import (
 	"time"
 )
 
+const ShutdownTimeSec = 30
+
 func main() {
 	env, _ := config.GetEnvironment()
 	appCfg, err := config.LoadConfig()
@@ -144,7 +146,7 @@ func handleGracefulShutdown(
 	shutdownLog.Warn(fnName, "", "Shutting down application")
 
 	// Shutdown signal with grace period of 30 seconds
-	shutdownCtx, shutdownCancelFn := context.WithTimeout(serverCtx, 30*time.Second)
+	shutdownCtx, shutdownCancelFn := context.WithTimeout(serverCtx, ShutdownTimeSec*time.Second)
 	defer shutdownCancelFn()
 
 	// Flush any buffered logs and traces
