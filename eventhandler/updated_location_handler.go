@@ -29,11 +29,11 @@ func (c *UpdatedLocationEventHandler) Process(msg *message.Message) error {
 
 	var newLocation domain.Location
 	if err := json.Unmarshal(msg.Payload, &newLocation); err != nil {
-		c.logger.Error(ctx, fnName, "failed to unmarshal location", err)
+		c.logger.ErrorCtx(ctx, fnName, "failed to unmarshal location", err)
 		return err
 	}
 
-	c.logger.Info(ctx, fnName, fmt.Sprintf("Received updated location: %v", newLocation))
+	c.logger.InfoCtx(ctx, fnName, fmt.Sprintf("Received updated location: %v", newLocation))
 
 	return nil
 }

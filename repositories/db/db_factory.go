@@ -16,23 +16,22 @@ import (
 	"time"
 )
 
-// nolint
-type DBFactory struct {
+type Factory struct {
 	locationsDBConnection *sql.DB
 }
 
-func NewDBFactory(dbConfig config.DBConfig) *DBFactory {
+func NewFactory(dbConfig config.DBConfig) *Factory {
 	conn, err := connectDB(dbConfig.LocationsDatabaseConnection, dbConfig)
 	if err != nil {
 		panic(err)
 	}
 
-	return &DBFactory{
+	return &Factory{
 		locationsDBConnection: conn,
 	}
 }
 
-func (df *DBFactory) GetLocationsDB() (repositories.LocationsDB, error) {
+func (df *Factory) GetLocationsDB() (repositories.LocationsDB, error) {
 	if df.locationsDBConnection == nil {
 		return nil, errors.New("could not create LocationsDBDal because the DB connection does not exist")
 	}
@@ -109,11 +108,10 @@ func connectDB(connString string, dbConfig config.DBConfig) (*sql.DB, error) {
 func pingDB(dbPtr *sql.DB) {
 	fnName := "pingDB"
 	pingDBLogger := monitor.GetStdLogger(fnName)
-	ctx := monitor.CreateAppContextFromContext(context.Background(), fnName, "")
 
 	defer func() {
 		if r := recover(); r != nil {
-			pingDBLogger.Error(ctx, "pingDB", "caught panic in pingDB goroutine", fmt.Errorf("%v", r))
+			pingDBLogger.Error("pingDB", "", "caught panic in pingDB goroutine", fmt.Errorf("%v", r))
 		}
 	}()
 
@@ -123,7 +121,7 @@ func pingDB(dbPtr *sql.DB) {
 
 		err := dbPtr.PingContext(timeoutCtx)
 		if err != nil {
-			pingDBLogger.Error(ctx, "pingDB", "failed to ping DB", err)
+			pingDBLogger.Error("pingDB", "", "failed to ping DB", err)
 		}
 
 		time.Sleep(time.Minute * 1)

@@ -56,7 +56,7 @@ func main() {
 	}
 
 	// Create repositories
-	dalFactory := db.NewDBFactory(appCfg.DBConfig)
+	dalFactory := db.NewFactory(appCfg.DBConfig)
 	googleMapsAPI := googleMapsRepo.NewGoogleMapsRepository(customHTTPClient)
 
 	// Create services
@@ -130,7 +130,6 @@ func handleGracefulShutdown(
 ) {
 	fnName := "handleGracefulShutdown"
 	shutdownLog := monitor.GetStdLogger("gracefulShutdown")
-	appCtx := monitor.CreateAppContextFromContext(serverCtx, fnName, "")
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c,
@@ -140,7 +139,7 @@ func handleGracefulShutdown(
 		syscall.SIGTERM)
 
 	<-c
-	shutdownLog.Warn(appCtx, fnName, "Shutting down app")
+	shutdownLog.Warn(fnName, "", "Shutting down application")
 
 	// Shutdown signal with grace period of 30 seconds
 	shutdownCtx, shutdownCancelFn := context.WithTimeout(serverCtx, 30*time.Second)
@@ -152,12 +151,12 @@ func handleGracefulShutdown(
 
 	// Close web server
 	if err := server.Shutdown(shutdownCtx); err != nil {
-		shutdownLog.Error(appCtx, fnName, "failed to shutdown web server", err)
+		shutdownLog.Error(fnName, "", "failed to shutdown web server", err)
 	}
 
 	// Close event router
 	if err := router.Close(); err != nil {
-		shutdownLog.Error(appCtx, fnName, "failed to shutdown event router", err)
+		shutdownLog.Error(fnName, "", "failed to shutdown event router", err)
 	}
 
 	serverCancelFn()

@@ -1,3 +1,9 @@
+run:
+  timeout: 2m
+  go: '1.19'
+  skip-dirs:
+    - mocks
+    - migrations
 linters-settings:
   govet:
     check-shadowing: true
@@ -21,12 +27,6 @@ linters-settings:
     min-occurrences: 2
   depguard:
     list-type: blacklist
-      #packages:
-      # logging is allowed only by logutils.Log, logrus
-      # is allowed to use only in logutils package
-      #- github.com/sirupsen/logrus
-      #packages-with-error-messages:
-    #github.com/sirupsen/logrus: "logging is allowed only by logutils.Log"
   misspell:
     locale: US
   lll:
@@ -35,8 +35,6 @@ linters-settings:
     lines: 200
     statements: 100
 linters:
-  # please, do not use `enable-all`: it's deprecated and will be removed soon.
-  # inverted configuration with `enable-all` and `disable` is not scalable during updates of golangci-lint
   disable-all: true
   enable:
     - bodyclose
@@ -61,7 +59,6 @@ linters:
     - nakedret
     - scopelint
     - staticcheck
-    - structcheck
     - stylecheck
     - typecheck
     - unconvert
@@ -70,23 +67,13 @@ linters:
     - varcheck
     - whitespace
 issues:
-  # Excluding configuration per-path, per-linter, per-text and per-source
   exclude-rules:
-    - text: "weak cryptographic primitive"
-      linters:
-        - gosec
     - text: "File is not `gofmt`-ed with `-s`"
       linters:
         - gofmt
     - text: "SQL string formatting"
       linters:
         - gosec
-    - text: "Potential HTTP request"
-      linters:
-        - gosec
-    - text: "`cancelled` is a misspelling of `canceled`"
-      linters:
-        - misspell
     - path: _test\.go
       linters:
         - dupl
@@ -94,17 +81,7 @@ issues:
     - path: http
       linters:
         - dupl
-run:
-  skip-dirs:
-    - test/testdata_etc
-    - internal/cache
-    - internal/renameio
-    - internal/robustio
-    - mocks
-    - migrations
-# golangci.com configuration
-# https://github.com/golangci/golangci/wiki/Configuration
 service:
-  golangci-lint-version: 1.19.x # use the fixed version to not introduce new linters unexpectedly
+  golangci-lint-version: 1.51.2 # use the fixed version to not introduce new linters unexpectedly
   prepare:
     - echo "here I can run custom commands, but no preparation needed for this repo"

@@ -62,12 +62,12 @@ func (s *LocationService) CreateLocation(ctx monitor.ApplicationContext, newLoca
 	// Check if location name is already in use
 	nameInUse, err := db.CheckLocationNameExistence(ctx, newLocationData.Name)
 	if err != nil {
-		s.logger.Error(ctx, fnName, "failed to check location name existence", err)
+		s.logger.ErrorCtx(ctx, fnName, "failed to check location name existence", err)
 		return location, err
 	}
 	if nameInUse {
 		errVal := domain.NameAlreadyInUseErr{Msg: fmt.Sprintf("location name '%v' is already in use", newLocationData.Name)}
-		s.logger.Warn(ctx, fnName, errVal.Msg)
+		s.logger.WarnCtx(ctx, fnName, errVal.Msg)
 		return location, errVal
 	}
 
@@ -95,7 +95,7 @@ func (s *LocationService) CreateLocation(ctx monitor.ApplicationContext, newLoca
 
 		return nil
 	}); err != nil {
-		s.logger.Error(ctx, fnName, "tx failed", err)
+		s.logger.ErrorCtx(ctx, fnName, "tx failed", err)
 		return location, err
 	}
 
@@ -155,7 +155,7 @@ func (s *LocationService) UpdateLocation(ctx monitor.ApplicationContext, updated
 
 		return nil
 	}); err != nil {
-		s.logger.Error(ctx, fnName, "tx failed", err)
+		s.logger.ErrorCtx(ctx, fnName, "tx failed", err)
 		return location, err
 	}
 
@@ -191,7 +191,7 @@ func (s *LocationService) GetPaginatedLocations(ctx monitor.ApplicationContext, 
 	page, err = db.GetPaginatedLocations(ctx, filters)
 	if err != nil {
 		span.SetStatus(codes.Error, err.Error())
-		s.logger.Error(ctx, fnName, "failed to retrieve paginated locations", err)
+		s.logger.ErrorCtx(ctx, fnName, "failed to retrieve paginated locations", err)
 		return page, err
 	}
 
@@ -215,7 +215,7 @@ func (s *LocationService) buildNewLocation(ctx monitor.ApplicationContext, data 
 	}
 
 	if validatedAddress == nil {
-		s.logger.Warn(ctx, "buildNewLocation", "failed to validate address", monitor.LoggingParam{Name: "address_data", Value: data})
+		s.logger.WarnCtx(ctx, "buildNewLocation", "failed to validate address", monitor.LoggingParam{Name: "address_data", Value: data})
 		return domain.Location{}, domain.AddressNotValidErr{Msg: "the address information does not correspond to a valid address"}
 	}
 
@@ -271,7 +271,7 @@ func (s *LocationService) updateLocation(
 	}
 
 	if validatedAddress == nil {
-		s.logger.Warn(ctx, "updateLocation", "failed to validate address", monitor.LoggingParam{Name: "address_data", Value: updateData})
+		s.logger.WarnCtx(ctx, "updateLocation", "failed to validate address", monitor.LoggingParam{Name: "address_data", Value: updateData})
 		return domain.AddressNotValidErr{Msg: "the address information does not correspond to a valid address"}
 	}
 

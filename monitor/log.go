@@ -38,10 +38,14 @@ type LoggingParam struct {
 }
 
 type AppLogger interface {
-	Debug(ctx ApplicationContext, function, msg string, params ...LoggingParam)
-	Info(ctx ApplicationContext, function, msg string, params ...LoggingParam)
-	Warn(ctx ApplicationContext, function, msg string, params ...LoggingParam)
-	Error(ctx ApplicationContext, function, msg string, err error, params ...LoggingParam)
+	Debug(function, corrID, msg string, params ...LoggingParam)
+	DebugCtx(ctx ApplicationContext, function, msg string, params ...LoggingParam)
+	Info(function, corrID, msg string, params ...LoggingParam)
+	InfoCtx(ctx ApplicationContext, function, msg string, params ...LoggingParam)
+	Warn(function, corrID, msg string, params ...LoggingParam)
+	WarnCtx(ctx ApplicationContext, function, msg string, params ...LoggingParam)
+	Error(function, corrID, msg string, err error, params ...LoggingParam)
+	ErrorCtx(ctx ApplicationContext, function, msg string, err error, params ...LoggingParam)
 }
 
 type StdLogger struct {
@@ -56,19 +60,38 @@ func GetStdLogger(object string) StdLogger {
 	}
 }
 
-func (c StdLogger) Debug(ctx ApplicationContext, function, msg string, params ...LoggingParam) {
+func (c StdLogger) Debug(function, corrID, msg string, params ...LoggingParam) {
+	logger.Debug(msg, c.getFields(function, corrID, params)...)
+}
+
+func (c StdLogger) DebugCtx(ctx ApplicationContext, function, msg string, params ...LoggingParam) {
 	logger.Ctx(ctx).Debug(msg, c.getFields(function, ctx.GetCorrelationID(), params)...)
 }
 
-func (c StdLogger) Info(ctx ApplicationContext, function, msg string, params ...LoggingParam) {
+func (c StdLogger) Info(function, corrID, msg string, params ...LoggingParam) {
+	logger.Info(msg, c.getFields(function, corrID, params)...)
+}
+
+func (c StdLogger) InfoCtx(ctx ApplicationContext, function, msg string, params ...LoggingParam) {
 	logger.Ctx(ctx).Info(msg, c.getFields(function, ctx.GetCorrelationID(), params)...)
 }
 
-func (c StdLogger) Warn(ctx ApplicationContext, function, msg string, params ...LoggingParam) {
+func (c StdLogger) Warn(function, corrID, msg string, params ...LoggingParam) {
+	logger.Warn(msg, c.getFields(function, corrID, params)...)
+}
+
+func (c StdLogger) WarnCtx(ctx ApplicationContext, function, msg string, params ...LoggingParam) {
 	logger.Ctx(ctx).Warn(msg, c.getFields(function, ctx.GetCorrelationID(), params)...)
 }
 
-func (c StdLogger) Error(ctx ApplicationContext, function, msg string, err error, params ...LoggingParam) {
+func (c StdLogger) Error(function, corrID, msg string, err error, params ...LoggingParam) {
+	fields := c.getFields(function, corrID, params)
+	fields = append(fields, zap.Error(err))
+
+	logger.Error(msg, fields...)
+}
+
+func (c StdLogger) ErrorCtx(ctx ApplicationContext, function, msg string, err error, params ...LoggingParam) {
 	fields := c.getFields(function, ctx.GetCorrelationID(), params)
 	fields = append(fields, zap.Error(err))
 
