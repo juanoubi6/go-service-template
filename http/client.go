@@ -166,7 +166,9 @@ func (cli *CustomClient) DoWithRetry(
 		time.Sleep(backoff)
 	}
 
-	defer cancelFn()
+	if cancelFn != nil {
+		defer cancelFn()
+	}
 
 	if err != nil {
 		return CustomHTTPResponse{}, fmt.Errorf("failed to execute request, unexpected error. Error: %w", err)
