@@ -29,7 +29,7 @@ func Test_BuildCursorPage_NextDirectionWithMoreDataThanLimitOnEmptyCursor(t *tes
 	assert.Equal(t, filters.Limit, page.Limit)
 }
 
-func Test_BuildCursorPage_NextDirectionWithMoreDataThanLimitOnWithCursorValue(t *testing.T) {
+func Test_BuildCursorPage_NextDirectionWithMoreDataThanLimitWithCursorValue(t *testing.T) {
 	data := []Location{{Name: NameA}, {Name: NameB}, {Name: NameC}}
 	filters := CursorPaginationFilters{
 		Cursor:    CursorValue,
@@ -45,7 +45,7 @@ func Test_BuildCursorPage_NextDirectionWithMoreDataThanLimitOnWithCursorValue(t 
 	assert.Equal(t, filters.Limit, page.Limit)
 }
 
-func Test_BuildCursorPage_NextDirectionWithLessDataThanLimitOnWithCursorValue(t *testing.T) {
+func Test_BuildCursorPage_NextDirectionWithLessDataThanLimitWithCursorValue(t *testing.T) {
 	data := []Location{{Name: NameC}}
 	filters := CursorPaginationFilters{
 		Cursor:    CursorValue,
@@ -61,7 +61,7 @@ func Test_BuildCursorPage_NextDirectionWithLessDataThanLimitOnWithCursorValue(t 
 	assert.Equal(t, filters.Limit, page.Limit)
 }
 
-func Test_BuildCursorPage_PrevDirectionWithMoreDataThanLimitOnWithCursorValue(t *testing.T) {
+func Test_BuildCursorPage_PrevDirectionWithMoreDataThanLimitWithCursorValue(t *testing.T) {
 	data := []Location{{Name: NameC}, {Name: NameB}, {Name: NameA}}
 	filters := CursorPaginationFilters{
 		Cursor:    CursorValue,
@@ -77,7 +77,7 @@ func Test_BuildCursorPage_PrevDirectionWithMoreDataThanLimitOnWithCursorValue(t 
 	assert.Equal(t, filters.Limit, page.Limit)
 }
 
-func Test_BuildCursorPage_PrevDirectionWithLessDataThanLimitOnWithCursorValue(t *testing.T) {
+func Test_BuildCursorPage_PrevDirectionWithLessDataThanLimitWithCursorValue(t *testing.T) {
 	data := []Location{{Name: NameB}, {Name: NameA}}
 	filters := CursorPaginationFilters{
 		Cursor:    CursorValue,
