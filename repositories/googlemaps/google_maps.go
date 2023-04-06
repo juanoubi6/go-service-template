@@ -68,7 +68,7 @@ func (r *Repository) ValidateAddress(ctx monitor.ApplicationContext, request goo
 			Value: string(res.BodyPayload),
 		})
 
-		return nil, err
+		return nil, errors.New("google API request failed")
 	}
 
 	var response googlemaps.AddressValidationResponse
