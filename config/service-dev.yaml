@@ -6,7 +6,7 @@ webServerConfig:
   readHeaderTimeout: 1s
 kafkaConfig:
   brokers:
-    - localhost:9092
+    - kafka:9092
   consumerGroup: "go-service-template-dev"
   maxRetries: 3
 httpClientConfig:

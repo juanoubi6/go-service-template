@@ -18,6 +18,9 @@ services:
       ENV: dev
     depends_on:
       - templatedb
+      - zookeeper
+      - kafka
+      - jaeger
   jaeger:
     image: jaegertracing/all-in-one:1.42
     ports:
