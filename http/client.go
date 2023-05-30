@@ -207,7 +207,7 @@ func (cli *CustomClient) handleResponse(
 
 	cli.logger.InfoCtx(ctx, functionName, "HTTP request successful",
 		monitor.LoggingParam{
-			Name: "url", Value: response.Request.URL.RawQuery,
+			Name: "url", Value: response.Request.URL.String(),
 		},
 		monitor.LoggingParam{
 			Name: "status_code", Value: response.StatusCode,
