@@ -44,7 +44,7 @@ func registerSyncTraceProvider(collectorEndpoint string) {
 	otel.SetTextMapPropagator(propagation.TraceContext{})
 }
 
-func runClient() {
+func main() {
 	_, _ = config.GetEnvironment()
 	appCfg, err := config.LoadConfig()
 	if err != nil {

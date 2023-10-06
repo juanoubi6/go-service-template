@@ -112,7 +112,6 @@ func (cli *CustomClient) Do(ctx monitor.ApplicationContext, requestValues Reques
 
 	resp, err := cli.baseClient.Do(req)
 	if err != nil {
-		_ = resp.Body.Close()
 		cli.logger.ErrorCtx(ctx, fnName, "http request failed", err)
 		return CustomHTTPResponse{}, fmt.Errorf("failed to execute request: %w", err)
 	}
