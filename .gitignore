@@ -2,7 +2,6 @@
 .circleci
 .git
 .idea
-.vscode
 ignition
 
 # Go
