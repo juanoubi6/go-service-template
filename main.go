@@ -43,6 +43,8 @@ func main() {
 		panic(err)
 	}
 
+	println("Initiating APP. ENV: " + env)
+
 	// Open Telemetry
 	monitor.RegisterTraceProvider(appCfg.OpenTelemetryConfig, appCfg.AppConfig)
 

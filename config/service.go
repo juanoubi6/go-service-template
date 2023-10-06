@@ -16,7 +16,7 @@ const (
 	Qa         = "qa"
 	Uat        = "uat"
 	Production = "prod"
-	Default    = Dev
+	Default    = Local
 )
 
 type ServiceConfig struct {
