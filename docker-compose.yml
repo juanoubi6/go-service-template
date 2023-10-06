@@ -21,7 +21,7 @@ services:
       - zookeeper
       - kafka
       - jaeger
-  jaeger:
+  jaeger: # Access UI via http://localhost:16686
     image: jaegertracing/all-in-one:1.42
     ports:
       - "5775:5775/udp"
