@@ -89,11 +89,8 @@ func (s *LocationService) CreateLocation(ctx monitor.ApplicationContext, newLoca
 		if txErr != nil {
 			return txErr
 		}
-		if txErr = s.publisher.Publish(domain.LocationsNewTopic, kafkaMsg); txErr != nil {
-			return txErr
-		}
 
-		return nil
+		return s.publisher.Publish(domain.LocationsNewTopic, kafkaMsg)
 	}); err != nil {
 		s.logger.ErrorCtx(ctx, fnName, "tx failed", err)
 		return location, err
@@ -149,11 +146,8 @@ func (s *LocationService) UpdateLocation(ctx monitor.ApplicationContext, updated
 		if txErr != nil {
 			return txErr
 		}
-		if txErr = s.publisher.Publish(domain.LocationsUpdatedTopic, kafkaMsg); txErr != nil {
-			return txErr
-		}
 
-		return nil
+		return s.publisher.Publish(domain.LocationsUpdatedTopic, kafkaMsg)
 	}); err != nil {
 		s.logger.ErrorCtx(ctx, fnName, "tx failed", err)
 		return location, err

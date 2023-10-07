@@ -110,7 +110,7 @@ func (cli *CustomClient) Do(ctx monitor.ApplicationContext, requestValues Reques
 		return CustomHTTPResponse{}, fmt.Errorf("failed to build HTTP request: %w", err)
 	}
 
-	resp, err := cli.baseClient.Do(req)
+	resp, err := cli.baseClient.Do(req) //nolint
 	if err != nil {
 		cli.logger.ErrorCtx(ctx, fnName, "http request failed", err)
 		return CustomHTTPResponse{}, fmt.Errorf("failed to execute request: %w", err)

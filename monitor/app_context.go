@@ -41,7 +41,7 @@ func CreateAppContextFromRequest(request *http.Request, correlationID string) *A
 
 func CreateMockAppContext(operationName string) *AppContext {
 	return &AppContext{
-		Context: context.Background(),
+		Context: context.WithValue(context.Background(), CorrelationIDContextKey, operationName),
 	}
 }
 
