@@ -9,6 +9,7 @@ import (
 	"go-service-template/monitor"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/baggage"
 	"go.opentelemetry.io/otel/exporters/jaeger"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -35,13 +36,12 @@ func registerSyncTraceProvider(collectorEndpoint string) {
 			semconv.SchemaURL,
 			semconv.ServiceName("mock-client"),
 			attribute.String("environment", env),
-			attribute.Int64("ID", 1),
 		)),
 	)
 
 	// Register our TracerProvider as the global so any imported instrumentation in the future will default to using it.
 	otel.SetTracerProvider(tp)
-	otel.SetTextMapPropagator(propagation.TraceContext{})
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 }
 
 func main() {
@@ -59,13 +59,29 @@ func main() {
 	// Create http client, it already has OTEL support to propagate spans
 	customHTTPClient := customHTTP.CreateCustomHTTPClient(appCfg.HTTPClientConfig)
 
+	// Create new tracer and root span
 	tr := otel.Tracer("clienTracer")
 	spanCtx, span := tr.Start(
 		appCtx, 
 		"clientCall", 
 		trace.WithSpanKind(trace.SpanKindClient),
-		trace.WithAttributes(attribute.String(monitor.CorrelationIDField, "CLIENT-CORRELATION-ID")),
+		trace.WithAttributes(attribute.String(monitor.CorrelationIDField, appCtx.GetCorrelationID())),
 	)
+
+	// Add a baggage to the context with the correlation ID
+	bagMember, err := baggage.NewMember(monitor.CorrelationIDField,appCtx.GetCorrelationID())
+	if err != nil{
+		panic(err)
+	}
+
+	bag, err := baggage.New(bagMember)
+	if err != nil{
+		panic(err)
+	}
+
+	spanCtx = baggage.ContextWithBaggage(spanCtx, bag)
+
+	// Create a new app context
 	appCtx = &monitor.AppContext{Context: spanCtx}
 
 	header := http.Header{}

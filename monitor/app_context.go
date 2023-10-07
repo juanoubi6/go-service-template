@@ -4,9 +4,15 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/baggage"
 	"go.opentelemetry.io/otel/trace"
 	"net/http"
 )
+
+type KeyValuePair struct {
+	Key   string
+	Value string
+}
 
 type ApplicationContext interface {
 	context.Context
@@ -23,9 +29,13 @@ func CreateAppContextFromContext(ctx context.Context, correlationID string) *App
 		correlationID = uuid.New().String()
 	}
 
-	newCtx := context.WithValue(ctx, CorrelationIDContextKey, correlationID)
+	// Search if context has a baggage which contains a correlationID. If not, set the provided one
+	baggageCorrelationID := baggage.FromContext(ctx).Member(CorrelationIDField).Value()
+	if baggageCorrelationID == "" {
+		ctx = addBaggageToContext(ctx, KeyValuePair{CorrelationIDField, correlationID})
+	}
 
-	return &AppContext{Context: newCtx}
+	return &AppContext{Context: ctx}
 }
 
 func CreateAppContextFromRequest(request *http.Request, correlationID string) *AppContext {
@@ -33,10 +43,15 @@ func CreateAppContextFromRequest(request *http.Request, correlationID string) *A
 		correlationID = uuid.New().String()
 	}
 
-	existingContext := request.Context()
-	newCtx := context.WithValue(existingContext, CorrelationIDContextKey, correlationID)
+	requestCtx := request.Context()
 
-	return &AppContext{Context: newCtx}
+	// Search if context has a baggage which contains a correlationID. If not, set the provided one
+	baggageCorrelationID := baggage.FromContext(requestCtx).Member(CorrelationIDField).Value()
+	if baggageCorrelationID == "" {
+		requestCtx = addBaggageToContext(requestCtx, KeyValuePair{CorrelationIDField, correlationID})
+	}
+
+	return &AppContext{Context: requestCtx}
 }
 
 func CreateMockAppContext(operationName string) *AppContext {
@@ -46,12 +61,7 @@ func CreateMockAppContext(operationName string) *AppContext {
 }
 
 func (appCtx *AppContext) GetCorrelationID() string {
-	val := appCtx.Value(CorrelationIDContextKey)
-	if val == nil {
-		return ""
-	}
-
-	return val.(string)
+	return baggage.FromContext(appCtx).Member(CorrelationIDField).Value()
 }
 
 // StartSpan is a wrapper around tracer.Start() that returns an ApplicationContext object instead of a plain context
@@ -64,4 +74,23 @@ func (appCtx *AppContext) StartSpan(name string, opts ...trace.SpanStartOption) 
 	newCtx, span := GetGlobalTracer().Start(appCtx, name, opts...)
 
 	return &AppContext{Context: newCtx}, span
+}
+
+func addBaggageToContext(ctx context.Context, kvPairs ...KeyValuePair) context.Context {
+	// Create member list
+	members := []baggage.Member{}
+
+	// Transform all key-value pairs into baggage members
+	for _, kvPair := range kvPairs {
+		member, _ := baggage.NewMember(kvPair.Key, kvPair.Value)
+		members = append(members, member)
+	}
+
+	// Create the baggage with the members
+	bag, err := baggage.New(members...)
+	if err != nil {
+		panic(err)
+	}
+
+	return baggage.ContextWithBaggage(ctx, bag)
 }
