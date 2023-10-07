@@ -3,7 +3,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"go-service-template/config"
 	customHTTP "go-service-template/http"
 	"go-service-template/monitor"
@@ -62,20 +61,20 @@ func main() {
 	// Create new tracer and root span
 	tr := otel.Tracer("clienTracer")
 	spanCtx, span := tr.Start(
-		appCtx, 
-		"clientCall", 
+		appCtx,
+		"clientCall",
 		trace.WithSpanKind(trace.SpanKindClient),
 		trace.WithAttributes(attribute.String(monitor.CorrelationIDField, appCtx.GetCorrelationID())),
 	)
 
 	// Add a baggage to the context with the correlation ID
-	bagMember, err := baggage.NewMember(monitor.CorrelationIDField,appCtx.GetCorrelationID())
-	if err != nil{
+	bagMember, err := baggage.NewMember(monitor.CorrelationIDField, appCtx.GetCorrelationID())
+	if err != nil {
 		panic(err)
 	}
 
 	bag, err := baggage.New(bagMember)
-	if err != nil{
+	if err != nil {
 		panic(err)
 	}
 
@@ -87,7 +86,8 @@ func main() {
 	header := http.Header{}
 	header.Set("Correlation-Id", appCtx.GetCorrelationID())
 
-	response, err := customHTTPClient.Do(appCtx, customHTTP.RequestValues{
+	// Send first request
+	_, err = customHTTPClient.Do(appCtx, customHTTP.RequestValues{
 		URL:       "http://localhost:8080/v1/locations?direction=next&limit=456",
 		Method:    http.MethodGet,
 		Headers:   header,
@@ -95,12 +95,23 @@ func main() {
 		BasicAuth: nil,
 	})
 	if err != nil {
-		println("Failed request")
-		span.End()
+		println("Failed 1st request")
+		return
+	}
+
+	// Send second request after the 1st one
+	_, err = customHTTPClient.Do(appCtx, customHTTP.RequestValues{
+		URL:       "http://localhost:8080/v1/location-mock",
+		Method:    http.MethodPost,
+		Headers:   header,
+		Body:      nil,
+		BasicAuth: nil,
+	})
+	if err != nil {
+		println("Failed 2nd request")
 		return
 	}
 
 	span.End()
 	time.Sleep(3 * time.Second)
-	fmt.Println(response)
 }

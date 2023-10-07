@@ -41,6 +41,24 @@ func NewLocationService(
 	}
 }
 
+func (s *LocationService) CreateLocationMock(ctx monitor.ApplicationContext) (err error) {
+	fnName := "LocationService.CreateLocation"
+
+	ctx, span := ctx.StartSpan(fnName, trace.WithAttributes(attribute.String("mock_span_attribute", "mock_value")))
+	defer span.End()
+
+	// Create and publish kafka message
+	kafkaMsg, txErr := pubsub.CreateJSONMessage(ctx, ctx.GetCorrelationID(), domain.Location{
+		ID:   "mockID",
+		Name: "mockLocation",
+	})
+	if txErr != nil {
+		return txErr
+	}
+
+	return s.publisher.Publish(domain.LocationsNewTopic, kafkaMsg)
+}
+
 func (s *LocationService) CreateLocation(ctx monitor.ApplicationContext, newLocationData dto.CreateLocationRequest) (location domain.Location, err error) {
 	fnName := "LocationService.CreateLocation"
 

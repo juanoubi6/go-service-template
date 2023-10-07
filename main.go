@@ -94,6 +94,7 @@ func main() {
 			locationsController.UpdateLocationEndpoint(),
 			locationsController.PaginatedLocationsEndpoint(),
 			locationsController.LocationDetailsEndpoint(),
+			locationsController.CreateLocationMockEndpoint(),
 		},
 	)
 

@@ -25,15 +25,20 @@ func (c *UpdatedLocationEventHandler) GetData() (name string, topic string) {
 
 func (c *UpdatedLocationEventHandler) Process(msg *message.Message) error {
 	fnName := "UpdatedLocationEventHandler.Process"
-	ctx := monitor.CreateAppContextFromContext(msg.Context(), msg.Metadata.Get(monitor.CorrelationIDField))
+	var appCtx monitor.ApplicationContext
+
+	appCtx = monitor.CreateAppContextFromContext(msg.Context(), msg.Metadata.Get(monitor.CorrelationIDField))
+
+	appCtx, span := appCtx.StartSpan(fnName)
+	defer span.End()
 
 	var newLocation domain.Location
 	if err := json.Unmarshal(msg.Payload, &newLocation); err != nil {
-		c.logger.ErrorCtx(ctx, fnName, "failed to unmarshal location", err)
+		c.logger.ErrorCtx(appCtx, fnName, "failed to unmarshal location", err)
 		return err
 	}
 
-	c.logger.InfoCtx(ctx, fnName, fmt.Sprintf("Received updated location: %v", newLocation))
+	c.logger.InfoCtx(appCtx, fnName, fmt.Sprintf("Received updated location: %v", newLocation))
 
 	return nil
 }

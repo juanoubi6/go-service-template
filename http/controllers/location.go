@@ -36,6 +36,20 @@ func NewLocationController(locService services.ILocationService, validator *vali
 }
 
 // Nada godoc
+// @Summary Create location mock
+// @Description Receives a request and mocks a location creation
+// @Produce json
+// @Success 200
+// @Router /v1/location-mock [post]
+func (ct *LocationController) CreateLocationMockEndpoint() customHTTP.Endpoint {
+	return customHTTP.Endpoint{
+		Method:  http.MethodPost,
+		Path:    "/v1/location-mock",
+		Handler: ct.createLocationMock,
+	}
+}
+
+// Nada godoc
 // @Summary Create location
 // @Description Create a new location and a default sub location
 // @Produce json
@@ -97,6 +111,22 @@ func (ct *LocationController) LocationDetailsEndpoint() customHTTP.Endpoint {
 		Path:    "/v1/locations/:locationID",
 		Handler: ct.getLocationDetails,
 	}
+}
+
+func (ct *LocationController) createLocationMock(c echo.Context) error {
+	fnName := "createLocationMock"
+	var appCtx monitor.ApplicationContext = middleware.GetAppContext(c)
+
+	appCtx, span := appCtx.StartSpan(fnName)
+	defer span.End()
+
+	err := ct.locationService.CreateLocationMock(appCtx)
+	if err != nil {
+		ct.logger.ErrorCtx(appCtx, fnName, "failed to create location mock", err)
+		return c.JSON(httpStatusFromError(err), buildFailResponse(err, err.Error(), appCtx.GetCorrelationID()))
+	}
+
+	return c.JSON(http.StatusOK, "ok")
 }
 
 func (ct *LocationController) createLocation(c echo.Context) error {

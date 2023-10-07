@@ -7,6 +7,7 @@ import (
 )
 
 type ILocationService interface {
+	CreateLocationMock(ctx monitor.ApplicationContext) error
 	GetLocationByID(ctx monitor.ApplicationContext, id string) (*domain.Location, error)
 	CreateLocation(ctx monitor.ApplicationContext, newLocationData dto.CreateLocationRequest) (domain.Location, error)
 	UpdateLocation(ctx monitor.ApplicationContext, updatedLocationData dto.UpdateLocationRequest) (domain.Location, error)
