@@ -3,6 +3,8 @@ package monitor
 import (
 	"context"
 	"go-service-template/config"
+	"log"
+
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/jaeger"
@@ -10,10 +12,19 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
-	"log"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var globalTracerProvider *tracesdk.TracerProvider
+var globalTracer trace.Tracer
+
+func GetGlobalTracer() trace.Tracer{
+	if globalTracer != nil{
+		return globalTracer
+	}
+
+	return otel.GetTracerProvider().Tracer("default-tracer")
+}
 
 func FlushTracerProvider(ctx context.Context) {
 	if globalTracerProvider != nil {
@@ -30,6 +41,7 @@ func RegisterTraceProvider(openTelemetryCfg config.OpenTelemetryConfig, appCfg c
 	// Register our TracerProvider as the global so any imported instrumentation in the future will default to using it.
 	otel.SetTracerProvider(tp)
 	globalTracerProvider = tp
+	globalTracer = tp.Tracer(appCfg.Name)
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 }
 
@@ -55,7 +67,6 @@ func createTracerProvider(openTelemetryCfg config.OpenTelemetryConfig, appCfg co
 			semconv.ServiceName(appCfg.Name),
 			attribute.String("environment", env),
 			attribute.String("version", appCfg.Version),
-			attribute.Int64("ID", 1),
 		)),
 	)
 

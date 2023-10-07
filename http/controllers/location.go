@@ -103,7 +103,7 @@ func (ct *LocationController) createLocation(c echo.Context) error {
 	fnName := "createLocation"
 	var appCtx monitor.ApplicationContext = middleware.GetAppContext(c)
 
-	appCtx, span := appCtx.GetRootSpan(fnName)
+	appCtx, span := appCtx.StartSpan(fnName)
 	defer span.End()
 
 	createLocationRequest, err := parseAndValidateBody[dto.CreateLocationRequest](c.Request().Body, ct.validator)
@@ -125,7 +125,7 @@ func (ct *LocationController) updateLocation(c echo.Context) error {
 	fnName := "updateLocation"
 	var appCtx monitor.ApplicationContext = middleware.GetAppContext(c)
 
-	appCtx, span := appCtx.GetRootSpan(fnName)
+	appCtx, span := appCtx.StartSpan(fnName)
 	defer span.End()
 
 	locationID := c.Param("locationID")
@@ -158,7 +158,7 @@ func (ct *LocationController) getPaginatedLocations(c echo.Context) error {
 	fnName := "LocationController.getPaginatedLocations"
 	var appCtx monitor.ApplicationContext = middleware.GetAppContext(c)
 
-	appCtx, span := appCtx.GetRootSpan(fnName)
+	appCtx, span := appCtx.StartSpan(fnName)
 	defer span.End()
 
 	filters, err := buildLocationFilters(c.Request())
@@ -182,7 +182,7 @@ func (ct *LocationController) getLocationDetails(c echo.Context) error {
 	fnName := "getLocationDetails"
 	var appCtx monitor.ApplicationContext = middleware.GetAppContext(c)
 
-	appCtx, span := appCtx.GetRootSpan(fnName)
+	appCtx, span := appCtx.StartSpan(fnName)
 	defer span.End()
 
 	locationID := c.Param("locationID")

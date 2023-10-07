@@ -3,7 +3,6 @@ package monitor
 import (
 	"context"
 	"github.com/google/uuid"
-	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"net/http"
@@ -12,33 +11,21 @@ import (
 type ApplicationContext interface {
 	context.Context
 	GetCorrelationID() string
-	GetTracer() trace.Tracer
-	GetRootSpan(name string, opts ...trace.SpanStartOption) (ApplicationContext, trace.Span)
 	StartSpan(name string, opts ...trace.SpanStartOption) (ApplicationContext, trace.Span)
 }
 
 type AppContext struct {
-	tracer        trace.Tracer
-	correlationID string
 	context.Context
 }
 
-func CreateAppContextFromContext(ctx context.Context, tracerName, correlationID string) *AppContext {
+func CreateAppContextFromContext(ctx context.Context, correlationID string) *AppContext {
 	if correlationID == "" {
 		correlationID = uuid.New().String()
 	}
 
-	tracer := otel.Tracer(tracerName, trace.WithInstrumentationAttributes(
-		attribute.String(CorrelationIDField, correlationID),
-	))
+	newCtx := context.WithValue(ctx, CorrelationIDContextKey, correlationID)
 
-	appCtx := &AppContext{
-		tracer:        tracer,
-		correlationID: correlationID,
-		Context:       ctx,
-	}
-
-	return appCtx
+	return &AppContext{Context: newCtx}
 }
 
 func CreateAppContextFromRequest(request *http.Request, correlationID string) *AppContext {
@@ -46,69 +33,35 @@ func CreateAppContextFromRequest(request *http.Request, correlationID string) *A
 		correlationID = uuid.New().String()
 	}
 
-	tracer := otel.Tracer(request.RequestURI, trace.WithInstrumentationAttributes(
-		attribute.String(CorrelationIDField, correlationID),
-	))
+	existingContext := request.Context()
+	newCtx := context.WithValue(existingContext, CorrelationIDContextKey, correlationID)
 
-	appCtx := &AppContext{
-		tracer:        tracer,
-		correlationID: correlationID,
-		Context:       request.Context(),
-	}
-
-	return appCtx
+	return &AppContext{Context: newCtx}
 }
 
 func CreateMockAppContext(operationName string) *AppContext {
-	appCtx := &AppContext{
-		tracer:        trace.NewNoopTracerProvider().Tracer(operationName),
-		correlationID: operationName,
-		Context:       context.Background(),
+	return &AppContext{
+		Context: context.Background(),
 	}
-
-	return appCtx
 }
 
 func (appCtx *AppContext) GetCorrelationID() string {
-	return appCtx.correlationID
-}
-
-func (appCtx *AppContext) GetTracer() trace.Tracer {
-	if appCtx.tracer == nil {
-		return trace.NewNoopTracerProvider().Tracer("no-name-tracer")
+	val := appCtx.Value(CorrelationIDContextKey)
+	if val == nil {
+		return ""
 	}
 
-	return appCtx.tracer
-}
-
-// GetRootSpan returns the appCtx itself as the context and the root span created before
-func (appCtx *AppContext) GetRootSpan(name string, opts ...trace.SpanStartOption) (ApplicationContext, trace.Span) {
-	correlationIDSpanAttr := attribute.String(CorrelationIDField, appCtx.correlationID)
-	opts = append(opts,
-		trace.WithAttributes(correlationIDSpanAttr),
-		trace.WithSpanKind(trace.SpanKindServer),
-	)
-
-	// Retrieve any existing span, so we can add the CorrelationID to it
-	fatherSpan := trace.SpanFromContext(appCtx)
-	fatherSpan.SetAttributes(correlationIDSpanAttr)
-
-	newCtx, rootSpan := appCtx.tracer.Start(appCtx, name, opts...)
-
-	return appCtx.clone(newCtx), rootSpan
+	return val.(string)
 }
 
 // StartSpan is a wrapper around tracer.Start() that returns an ApplicationContext object instead of a plain context
 func (appCtx *AppContext) StartSpan(name string, opts ...trace.SpanStartOption) (ApplicationContext, trace.Span) {
-	newCtx, span := appCtx.tracer.Start(appCtx, name, opts...)
+	opts = append(opts,
+		trace.WithAttributes(attribute.String(CorrelationIDField, appCtx.GetCorrelationID())),
+		trace.WithSpanKind(trace.SpanKindServer),
+	)
 
-	return appCtx.clone(newCtx), span
-}
+	newCtx, span := GetGlobalTracer().Start(appCtx, name, opts...)
 
-func (appCtx *AppContext) clone(newCtx context.Context) *AppContext {
-	return &AppContext{
-		tracer:        appCtx.tracer,
-		correlationID: appCtx.correlationID,
-		Context:       newCtx,
-	}
+	return &AppContext{Context: newCtx}, span
 }

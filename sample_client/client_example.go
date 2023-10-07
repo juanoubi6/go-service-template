@@ -33,7 +33,7 @@ func registerSyncTraceProvider(collectorEndpoint string) {
 		tracesdk.WithSyncer(exporter),
 		tracesdk.WithResource(resource.NewWithAttributes(
 			semconv.SchemaURL,
-			semconv.ServiceName("CLIENT"),
+			semconv.ServiceName("mock-client"),
 			attribute.String("environment", env),
 			attribute.Int64("ID", 1),
 		)),
@@ -51,16 +51,22 @@ func main() {
 		panic(err)
 	}
 
+	appCtx := monitor.CreateAppContextFromContext(context.Background(), "CLIENT-CORRELATION-ID")
+
 	// Create sync otel trace provider
 	registerSyncTraceProvider(appCfg.OpenTelemetryConfig.CollectorEndpoint)
 
 	// Create http client, it already has OTEL support to propagate spans
 	customHTTPClient := customHTTP.CreateCustomHTTPClient(appCfg.HTTPClientConfig)
 
-	tr := otel.Tracer("client-service")
-	spanCtx, span := tr.Start(context.Background(), "clientCall", trace.WithSpanKind(trace.SpanKindClient))
-
-	appCtx := monitor.CreateAppContextFromContext(spanCtx, "client-service-tracer", "clientCorrID")
+	tr := otel.Tracer("clienTracer")
+	spanCtx, span := tr.Start(
+		appCtx, 
+		"clientCall", 
+		trace.WithSpanKind(trace.SpanKindClient),
+		trace.WithAttributes(attribute.String(monitor.CorrelationIDField, "CLIENT-CORRELATION-ID")),
+	)
+	appCtx = &monitor.AppContext{Context: spanCtx}
 
 	header := http.Header{}
 	header.Set("Correlation-Id", appCtx.GetCorrelationID())
@@ -73,7 +79,9 @@ func main() {
 		BasicAuth: nil,
 	})
 	if err != nil {
-		panic(err)
+		println("Failed request")
+		span.End()
+		return
 	}
 
 	span.End()
