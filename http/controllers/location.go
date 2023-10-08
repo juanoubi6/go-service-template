@@ -114,7 +114,7 @@ func (ct *LocationController) LocationDetailsEndpoint() customHTTP.Endpoint {
 }
 
 func (ct *LocationController) createLocationMock(c echo.Context) error {
-	fnName := "createLocationMock"
+	fnName := "LocationController.createLocationMock"
 	var appCtx monitor.ApplicationContext = middleware.GetAppContext(c)
 
 	appCtx, span := appCtx.StartSpan(fnName)
@@ -130,7 +130,7 @@ func (ct *LocationController) createLocationMock(c echo.Context) error {
 }
 
 func (ct *LocationController) createLocation(c echo.Context) error {
-	fnName := "createLocation"
+	fnName := "LocationController.createLocation"
 	var appCtx monitor.ApplicationContext = middleware.GetAppContext(c)
 
 	appCtx, span := appCtx.StartSpan(fnName)
@@ -152,7 +152,7 @@ func (ct *LocationController) createLocation(c echo.Context) error {
 }
 
 func (ct *LocationController) updateLocation(c echo.Context) error {
-	fnName := "updateLocation"
+	fnName := "LocationController.updateLocation"
 	var appCtx monitor.ApplicationContext = middleware.GetAppContext(c)
 
 	appCtx, span := appCtx.StartSpan(fnName)
@@ -209,7 +209,7 @@ func (ct *LocationController) getPaginatedLocations(c echo.Context) error {
 }
 
 func (ct *LocationController) getLocationDetails(c echo.Context) error {
-	fnName := "getLocationDetails"
+	fnName := "LocationController.getLocationDetails"
 	var appCtx monitor.ApplicationContext = middleware.GetAppContext(c)
 
 	appCtx, span := appCtx.StartSpan(fnName)
