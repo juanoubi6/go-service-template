@@ -25,7 +25,7 @@ type ServiceConfig struct {
 	HTTPClientConfig    HTTPClientConfig    `yaml:"httpClientConfig"`
 	WebServerConfig     WebServerConfig     `yaml:"webServerConfig"`
 	OpenTelemetryConfig OpenTelemetryConfig `yaml:"openTelemetryConfig"`
-	KafkaConfig         KafkaConfig         `yaml:"kafkaConfig"`
+	MessageBrokerConfig MessageBrokerConfig `yaml:"messageBrokerConfig"`
 }
 
 type WebServerConfig struct {
@@ -33,10 +33,9 @@ type WebServerConfig struct {
 	ReadHeaderTimeout string `yaml:"readHeaderTimeout"`
 }
 
-type KafkaConfig struct {
-	Brokers       []string `yaml:"brokers"`
-	ConsumerGroup string   `yaml:"consumerGroup"`
-	MaxRetries    int      `yaml:"maxRetries"`
+type MessageBrokerConfig struct {
+	URL              string `yaml:"url"`
+	QueueGroupPrefix string `yaml:"queueGroupPrefix"`
 }
 
 type OpenTelemetryConfig struct {

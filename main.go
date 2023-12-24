@@ -8,12 +8,6 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
-	"github.com/ThreeDotsLabs/watermill/message"
-	watermillMiddleware "github.com/ThreeDotsLabs/watermill/message/router/middleware"
-	"github.com/go-playground/validator/v10"
-	"github.com/labstack/echo/v4"
-	echoMiddleware "github.com/labstack/echo/v4/middleware"
 	"go-service-template/config"
 	_ "go-service-template/docs"
 	"go-service-template/eventhandler"
@@ -26,12 +20,18 @@ import (
 	googleMapsRepo "go-service-template/repositories/googlemaps"
 	"go-service-template/services"
 	"go-service-template/utils"
-	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/ThreeDotsLabs/watermill/message"
+	watermillMiddleware "github.com/ThreeDotsLabs/watermill/message/router/middleware"
+	"github.com/go-playground/validator/v10"
+	"github.com/labstack/echo/v4"
+	echoMiddleware "github.com/labstack/echo/v4/middleware"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 )
 
 const ShutdownTimeSec = 30
@@ -49,11 +49,11 @@ func main() {
 	// Create support structures
 	customHTTPClient := customHTTP.CreateCustomHTTPClient(appCfg.HTTPClientConfig)
 	structValidator := validator.New()
-	subscriber, err := pubsub.CreateSubscriber(kafka.DefaultSaramaSubscriberConfig(), appCfg.KafkaConfig)
+	subscriber, err := pubsub.CreateSubscriber(appCfg.MessageBrokerConfig)
 	if err != nil {
 		panic(err)
 	}
-	publisher, err := pubsub.CreatePublisher(kafka.DefaultSaramaSyncPublisherConfig(), appCfg.KafkaConfig)
+	publisher, err := pubsub.CreatePublisher(appCfg.MessageBrokerConfig)
 	if err != nil {
 		panic(err)
 	}

@@ -2,31 +2,28 @@ package pubsub
 
 import (
 	"encoding/json"
-	"github.com/Shopify/sarama"
 	"go-service-template/config"
 	"go-service-template/monitor"
 
 	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
+	"github.com/ThreeDotsLabs/watermill-nats/v2/pkg/nats"
 	"github.com/ThreeDotsLabs/watermill/message"
 )
 
 const MessageKey = "message_key"
 
-func CreatePublisher(kafkaCfg *sarama.Config, kafkaParams config.KafkaConfig) (message.Publisher, error) {
-	if len(kafkaParams.Brokers) == 0 {
-		return nil, ErrBrokerSliceEmpty
-	}
-
-	return kafka.NewPublisher(
-		kafka.PublisherConfig{
-			Brokers:               kafkaParams.Brokers,
-			Marshaler:             kafka.NewWithPartitioningMarshaler(GetMessageKeyFromMessage),
-			OverwriteSaramaConfig: kafkaCfg,
-			OTELEnabled:           true,
+func CreatePublisher(config config.MessageBrokerConfig) (message.Publisher, error) {
+	return nats.NewPublisher(
+		nats.PublisherConfig{
+			URL: config.URL,
+			JetStream: nats.JetStreamConfig{
+				TrackMsgId: true,  // Ensures ExactlyOnceDelivery
+				AckAsync:   false, // Ensures ExactlyOnceDelivery at the cost of latency
+			},
 		},
 		watermill.NewStdLogger(true, true),
 	)
+
 }
 
 func CreateJSONMessage(ctx monitor.ApplicationContext, key string, payload any) (*message.Message, error) {

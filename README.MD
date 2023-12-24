@@ -16,3 +16,7 @@ Simple CONTROLLER &rarr; SERVICE &rarr; REPOSITORY service template for a Golang
     * SQL Query tracing using [OTELSQL Wrapper](https://github.com/nhatthm/otelsql)
     * Propagate spans via Custom HTTP Client using [OTELHTTP](https://pkg.go.dev/go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp)
     * Request tracing using [OTELECHO](https://pkg.go.dev/go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho)
+
+Nats streams must be created manually
+- go-service-template-locations-new -> locations.new subject
+- go-service-template-locations-updated -> locations.updated subject

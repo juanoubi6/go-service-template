@@ -4,11 +4,9 @@ appConfig:
 webServerConfig:
   address: 0.0.0.0:8080
   readHeaderTimeout: 1s
-kafkaConfig:
-  brokers:
-    - localhost:9092
-  consumerGroup: "go-service-template-dev"
-  maxRetries: 3
+messageBrokerConfig:
+  url:
+  queueGroupPrefix: "go-service-template"
 httpClientConfig:
   locationsDatabaseConnection: "url"
   maxIdleConns: 100

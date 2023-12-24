@@ -1,6 +1,6 @@
 package domain
 
 const (
-	LocationsNewTopic     = "go-service-template.locations.new"
-	LocationsUpdatedTopic = "go-service-template.locations.updated"
+	LocationsNewTopic     = "locations.new"
+	LocationsUpdatedTopic = "locations.updated"
 )

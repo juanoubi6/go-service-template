@@ -1,29 +1,18 @@
 package pubsub
 
 import (
-	"github.com/Shopify/sarama"
 	"go-service-template/config"
 
 	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
+	"github.com/ThreeDotsLabs/watermill-nats/v2/pkg/nats"
 	"github.com/ThreeDotsLabs/watermill/message"
 )
 
-func CreateSubscriber(kafkaCfg *sarama.Config, kafkaParams config.KafkaConfig) (message.Subscriber, error) {
-	if len(kafkaParams.Brokers) == 0 {
-		return nil, ErrBrokerSliceEmpty
-	}
-
-	kafkaCfg.Consumer.Offsets.Initial = sarama.OffsetOldest
-	kafkaCfg.Admin.Retry.Max = kafkaParams.MaxRetries
-
-	return kafka.NewSubscriber(
-		kafka.SubscriberConfig{
-			Brokers:               kafkaParams.Brokers,
-			Unmarshaler:           kafka.DefaultMarshaler{},
-			OverwriteSaramaConfig: kafkaCfg,
-			ConsumerGroup:         kafkaParams.ConsumerGroup,
-			OTELEnabled:           true,
+func CreateSubscriber(config config.MessageBrokerConfig) (message.Subscriber, error) {
+	return nats.NewSubscriber(
+		nats.SubscriberConfig{
+			URL:              config.URL,
+			QueueGroupPrefix: config.QueueGroupPrefix, // Ensures ConsumerGroup functionality
 		},
 		watermill.NewStdLogger(true, true),
 	)
