@@ -169,7 +169,7 @@ func (dal *LocationsRepository) GetPaginatedLocations(ctx monitor.ApplicationCon
 
 	// Add filters
 	if filters.Name != nil {
-		filterClause := "l.name LIKE CONCAT ('%',?::text,'%')"
+		filterClause := "l.name ILIKE CONCAT ('%',?::text,'%')"
 		baseSelectQuery = baseSelectQuery.Where(filterClause, *filters.Name)
 	}
 

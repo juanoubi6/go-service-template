@@ -251,7 +251,7 @@ func (s *LocationsDALSuite) Test_GetPaginatedLocations_SuccessOnNextDirection() 
 	    INNER JOIN location.location_information li on l.id = li.location_id 
 	    INNER JOIN location.location_types lt on l.location_type_id = lt.id 
 	    INNER JOIN location.suppliers s on s.id = l.supplier_id 
-	  WHERE l.name LIKE CONCAT ('%',$1::text,'%') 
+	  WHERE l.name ILIKE CONCAT ('%',$1::text,'%') 
 	  AND l.name > $2 ORDER BY l.name ASC LIMIT 11`
 
 	s.sqlMock.ExpectQuery(expectedQuery).WithArgs(*filters.Name, filters.Cursor).WillReturnRows(
@@ -314,7 +314,7 @@ func (s *LocationsDALSuite) Test_GetPaginatedLocations_SuccessOnPrevDirection() 
 	    INNER JOIN location.location_information li on l.id = li.location_id 
 	    INNER JOIN location.location_types lt on l.location_type_id = lt.id 
 	    INNER JOIN location.suppliers s on s.id = l.supplier_id 
-	  WHERE l.name LIKE CONCAT ('%',$1::text,'%') 
+	  WHERE l.name ILIKE CONCAT ('%',$1::text,'%') 
 	  AND l.name < $2 ORDER BY l.name DESC LIMIT 11`
 
 	s.sqlMock.ExpectQuery(expectedQuery).WithArgs(*filters.Name, filters.CursorPaginationFilters.Cursor).WillReturnRows(
@@ -377,7 +377,7 @@ func (s *LocationsDALSuite) Test_GetPaginatedLocations_SuccessOnEmptyCursor() {
 	    INNER JOIN location.location_information li on l.id = li.location_id 
 	    INNER JOIN location.location_types lt on l.location_type_id = lt.id 
 	    INNER JOIN location.suppliers s on s.id = l.supplier_id 
-	  WHERE l.name LIKE CONCAT ('%',$1::text,'%') 
+	  WHERE l.name ILIKE CONCAT ('%',$1::text,'%') 
 		ORDER BY l.name ASC LIMIT 11`
 
 	s.sqlMock.ExpectQuery(expectedQuery).WithArgs(*filters.Name).WillReturnRows(

@@ -31,33 +31,33 @@ func BuildCursorPage[T Pageable](data []T, filters CursorPaginationFilters) Curs
 
 	page := CursorPage[T]{Limit: filters.Limit}
 
+	// Sort elements ASC
+	sort.Slice(data, func(i, j int) bool {
+		return data[i].GetUniqueOrderedIdentifier() < data[j].GetUniqueOrderedIdentifier()
+	})
+
 	if filters.Direction == NextPage {
-		// Data elements should be in ASC order here
 		if len(data) > filters.Limit {
 			page.NextPage = utils.ToPointer[string]((data[len(data)-2]).GetUniqueOrderedIdentifier())
-			page.PreviousPage = utils.ToPointer[string]((data[0]).GetUniqueOrderedIdentifier())
 			page.Data = data[0 : len(data)-1] // Remove last element
 		} else {
 			page.NextPage = nil
-			page.PreviousPage = utils.ToPointer[string]((data[0]).GetUniqueOrderedIdentifier())
 			page.Data = data
 		}
 
 		if filters.Cursor == "" {
 			page.PreviousPage = nil
+		}else{
+			page.PreviousPage = utils.ToPointer[string]((data[0]).GetUniqueOrderedIdentifier())
 		}
 	} else {
-		// Data elements should be in DESC order here. We need to order them in ASC
-		sort.Slice(data, func(i, j int) bool {
-			return data[i].GetUniqueOrderedIdentifier() < data[j].GetUniqueOrderedIdentifier()
-		})
+		page.NextPage = utils.ToPointer[string]((data[len(data)-1]).GetUniqueOrderedIdentifier())
+
 		if len(data) > filters.Limit {
 			page.PreviousPage = utils.ToPointer[string](data[1].GetUniqueOrderedIdentifier())
-			page.NextPage = utils.ToPointer[string]((data[len(data)-1]).GetUniqueOrderedIdentifier())
 			page.Data = data[1:] // Remove first element
 		} else {
 			page.PreviousPage = nil
-			page.NextPage = utils.ToPointer[string]((data[len(data)-1]).GetUniqueOrderedIdentifier())
 			page.Data = data
 		}
 	}
