@@ -8,12 +8,6 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
-	"github.com/ThreeDotsLabs/watermill/message"
-	watermillMiddleware "github.com/ThreeDotsLabs/watermill/message/router/middleware"
-	"github.com/go-playground/validator/v10"
-	"github.com/labstack/echo/v4"
-	echoMiddleware "github.com/labstack/echo/v4/middleware"
 	"go-service-template/config"
 	_ "go-service-template/docs"
 	"go-service-template/eventhandler"
@@ -26,12 +20,19 @@ import (
 	googleMapsRepo "go-service-template/repositories/googlemaps"
 	"go-service-template/services"
 	"go-service-template/utils"
-	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
+	"github.com/ThreeDotsLabs/watermill/message"
+	watermillMiddleware "github.com/ThreeDotsLabs/watermill/message/router/middleware"
+	"github.com/go-playground/validator/v10"
+	"github.com/labstack/echo/v4"
+	echoMiddleware "github.com/labstack/echo/v4/middleware"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 )
 
 const ShutdownTimeSec = 30
@@ -43,8 +44,8 @@ func main() {
 		panic(err)
 	}
 
-	// Open Telemetry
-	monitor.RegisterTraceProvider(appCfg.OpenTelemetryConfig, appCfg.AppConfig)
+	// Open Telemetry tools
+	monitor.RegisterMonitoringTools(appCfg.OpenTelemetryConfig, appCfg.AppConfig)
 
 	// Create support structures
 	customHTTPClient := customHTTP.CreateCustomHTTPClient(appCfg.HTTPClientConfig)
@@ -150,9 +151,9 @@ func handleGracefulShutdown(
 	shutdownCtx, shutdownCancelFn := context.WithTimeout(serverCtx, ShutdownTimeSec*time.Second)
 	defer shutdownCancelFn()
 
-	// Flush any buffered logs and traces
+	// Flush any buffered logs, traces and metrics
 	monitor.FlushLogger()
-	monitor.FlushTracerProvider(shutdownCtx)
+	monitor.FlushMonitorTools(shutdownCtx)
 
 	// Close web server
 	if err := server.Shutdown(shutdownCtx); err != nil {

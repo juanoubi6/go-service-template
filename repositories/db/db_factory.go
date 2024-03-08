@@ -4,16 +4,18 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	sq "github.com/Masterminds/squirrel"
-	_ "github.com/lib/pq" // side effect
-	"github.com/pkg/errors"
 	"go-service-template/config"
 	"go-service-template/monitor"
 	"go-service-template/repositories"
-	"go.nhat.io/otelsql"
-	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
+	"net/url"
 	"regexp"
+	"strings"
 	"time"
+
+	sq "github.com/Masterminds/squirrel"
+	_ "github.com/lib/pq" // side effect
+	"github.com/pkg/errors"
+	"github.com/uptrace/opentelemetry-go-extra/otelsql"
 )
 
 const (
@@ -65,19 +67,15 @@ func connectDB(connString string, dbConfig config.DBConfig) (*sql.DB, error) {
 
 	uri := connString
 
-	// Register the otelsql wrapper for the provided postgres driver.
-	driverNameWrapper, err := otelsql.Register(driverName,
-		otelsql.TraceQueryWithoutArgs(),
-		otelsql.TraceRowsClose(),
-		otelsql.TraceRowsAffected(),
-		otelsql.WithSystem(semconv.DBSystemPostgreSQL),
-	)
+	// Find DB name
+	parsedURL, err := url.Parse(connString)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Error parsing connection string: %w", err)
 	}
+	dbName := strings.TrimPrefix(parsedURL.Path, "/")
 
-	// Use OTEL to register query traces
-	dbPtr, err := sql.Open(driverNameWrapper, uri)
+	// Use otelsql to wrap the DB connection
+	dbPtr, err := otelsql.Open(driverName, uri, otelsql.WithDBName(dbName))
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to %s database: %w", driverName, err)
 	}

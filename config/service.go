@@ -40,7 +40,9 @@ type KafkaConfig struct {
 }
 
 type OpenTelemetryConfig struct {
-	CollectorEndpoint string `yaml:"collectorEndpoint"`
+	TracesCollectorEndpoint  string `yaml:"tracesCollectorEndpoint"`
+	MetricsCollectorEndpoint string `yaml:"metricsCollectorEndpoint"`
+	LogsCollectorEndpoint    string `yaml:"logsCollectorEndpoint"`
 }
 
 type DBConfig struct {

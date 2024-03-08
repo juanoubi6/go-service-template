@@ -13,6 +13,6 @@ Simple CONTROLLER &rarr; SERVICE &rarr; REPOSITORY service template for a Golang
     * Logs using [Zap](https://github.com/uber-go/zap)
     * Traces using [Golang OTEL SDK](https://github.com/open-telemetry/opentelemetry-go)
     * Metrics using [Prometheus](https://prometheus.io/docs/guides/go-application/) via [Echo Prometheus Middleware](https://echo.labstack.com/middleware/prometheus/)
-    * SQL Query tracing using [OTELSQL Wrapper](https://github.com/nhatthm/otelsql)
+    * SQL Query tracing using [OTELSQL Wrapper](https://github.com/uptrace/opentelemetry-go-extra)
     * Propagate spans via Custom HTTP Client using [OTELHTTP](https://pkg.go.dev/go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp)
     * Request tracing using [OTELECHO](https://pkg.go.dev/go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho)
