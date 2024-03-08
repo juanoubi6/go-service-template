@@ -47,6 +47,8 @@ func (s *LocationService) CreateLocationMock(ctx monitor.ApplicationContext) (er
 	ctx, span := ctx.StartSpan(fnName, trace.WithAttributes(attribute.String("mock_span_attribute", "mock_value")))
 	defer span.End()
 
+	s.logger.Info(fnName,"corrid","Test Log")
+
 	// Create and publish kafka message
 	kafkaMsg, txErr := pubsub.CreateJSONMessage(ctx, ctx.GetCorrelationID(), domain.Location{
 		ID:   "mockID",

@@ -58,6 +58,7 @@ func main() {
 
 	// Create sync otel trace provider
 	registerSyncTraceProvider(appCfg.OpenTelemetryConfig.TracesCollectorEndpoint)
+	monitor.NewGlobalLogger()
 
 	// Create http client, it already has OTEL support to propagate spans
 	customHTTPClient := customHTTP.CreateCustomHTTPClient(appCfg.HTTPClientConfig)

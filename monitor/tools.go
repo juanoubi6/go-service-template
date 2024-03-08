@@ -89,6 +89,9 @@ func RegisterMonitoringTools(openTelemetryCfg config.OpenTelemetryConfig, appCfg
 	// TODO: Create a LogProvider once OpenTelemetry develops the SDK
 
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+
+	// Create global logger
+	NewGlobalLogger()
 }
 
 // createTracerProvider returns an OpenTelemetry TracerProvider configured to use

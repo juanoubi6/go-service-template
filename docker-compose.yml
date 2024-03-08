@@ -68,6 +68,14 @@ services:
       - KAFKA_LOG4J_LOGGERS="kafka.controller=WARN,kafka.foo.bar=DEBUG"
       - KAFKA_LOG4J_ROOT_LOGLEVEL=WARN
       - KAFKA_TOOLS_LOG4J_LOGLEVEL=WARN
+  collector:
+      image: otel/opentelemetry-collector-contrib:latest
+      volumes:
+      - ./otel-config.yaml:/etc/otelcol-contrib/config.yaml
+      - ./:/usr/src/app
+      command: ['--config=/etc/otelcol-contrib/config.yaml']
+      ports:
+      - '4317:4317'
 
 volumes:
   pgdata:

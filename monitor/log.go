@@ -9,7 +9,7 @@ import (
 
 var logger *otelzap.Logger
 
-func init() {
+func NewGlobalLogger() {
 	env, _ := config.GetEnvironment()
 
 	var zapConfig zap.Config
