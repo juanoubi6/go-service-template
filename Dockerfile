@@ -1,5 +1,5 @@
 # Use the official Golang image as a parent image
-FROM golang:1.19-alpine AS build
+FROM golang:1.21-alpine AS build
 
 # Set the working directory
 WORKDIR /app
