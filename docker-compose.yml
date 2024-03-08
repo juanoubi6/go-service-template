@@ -30,8 +30,11 @@ services:
       - "5778:5778"
       - "16686:16686"
       - "14268:14268"
-      - "4318:4318"
+      - "4318:4318" # OTLP HTTP port
       - "9411:9411"
+      - "4317:4317" # OTLP gRPC port
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
   zookeeper:
     image: confluentinc/cp-zookeeper:5.4.0
     ports:

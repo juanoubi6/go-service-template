@@ -20,9 +20,9 @@ import (
 )
 
 var (
-	globalTracerProvider *tracesdk.TracerProvider
+	globalTracerProvider trace.TracerProvider
 	globalTracer         trace.Tracer
-	globalMeterProvider  *metricsdk.MeterProvider
+	globalMeterProvider  metric.MeterProvider
 	globalMeter          metric.Meter
 )
 
@@ -44,11 +44,17 @@ func GetGlobalMeter() metric.Meter {
 
 func FlushMonitorTools(ctx context.Context) {
 	if globalTracerProvider != nil {
-		_ = globalTracerProvider.Shutdown(ctx)
+		if gtp, ok := globalTracerProvider.(*tracesdk.TracerProvider); ok {
+			gtp.ForceFlush(ctx)
+			gtp.Shutdown(ctx)
+		}
 	}
 
 	if globalMeterProvider != nil {
-		_ = globalMeterProvider.Shutdown(ctx)
+		if gmp, ok := globalMeterProvider.(*metricsdk.MeterProvider); ok {
+			gmp.ForceFlush(ctx)
+			gmp.Shutdown(ctx)
+		}
 	}
 }
 
@@ -67,7 +73,7 @@ func RegisterMonitoringTools(openTelemetryCfg config.OpenTelemetryConfig, appCfg
 	if err != nil {
 		panic(err)
 	}
-	globalTracerProvider = tp.(*tracesdk.TracerProvider)
+	globalTracerProvider = tp
 	globalTracer = tp.Tracer(appCfg.Name)
 	otel.SetTracerProvider(globalTracerProvider)
 
@@ -76,7 +82,7 @@ func RegisterMonitoringTools(openTelemetryCfg config.OpenTelemetryConfig, appCfg
 	if err != nil {
 		panic(err)
 	}
-	globalMeterProvider = mp.(*metricsdk.MeterProvider)
+	globalMeterProvider = mp
 	globalMeter = mp.Meter(appCfg.Name)
 	otel.SetMeterProvider(globalMeterProvider)
 

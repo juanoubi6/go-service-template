@@ -9,7 +9,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/baggage"
-	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
@@ -20,8 +20,12 @@ import (
 )
 
 func registerSyncTraceProvider(collectorEndpoint string) {
-	// Create the Jaeger exporter
-	exporter, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(collectorEndpoint)))
+	// Create the OTLP exporter
+	exporter, err := otlptracegrpc.New(
+		context.Background(),
+		otlptracegrpc.WithInsecure(),
+		otlptracegrpc.WithEndpoint(collectorEndpoint),
+	)
 	if err != nil {
 		panic(err)
 	}
