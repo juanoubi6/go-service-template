@@ -7,11 +7,16 @@ import (
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/log"
+	logglobal "go.opentelemetry.io/otel/log/global"
+	nooplog "go.opentelemetry.io/otel/log/noop"
 	"go.opentelemetry.io/otel/metric"
 	noopmetric "go.opentelemetry.io/otel/metric/noop"
 	"go.opentelemetry.io/otel/propagation"
+	logsdk "go.opentelemetry.io/otel/sdk/log"
 	metricsdk "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
@@ -29,6 +34,11 @@ func FlushMonitorTools(ctx context.Context) {
 	if gmp, ok := otel.GetMeterProvider().(*metricsdk.MeterProvider); ok {
 		gmp.ForceFlush(ctx)
 		gmp.Shutdown(ctx)
+	}
+
+	if glp, ok := logglobal.GetLoggerProvider().(*logsdk.LoggerProvider); ok {
+		glp.ForceFlush(ctx)
+		glp.Shutdown(ctx)
 	}
 }
 
@@ -56,7 +66,12 @@ func RegisterMonitoringTools(openTelemetryCfg config.OpenTelemetryConfig, appCfg
 	}
 	otel.SetMeterProvider(mp)
 
-	// TODO: Create a LogProvider once OpenTelemetry develops the SDK
+	// Create a LogProvider (beta)
+	lp, err := createLogProvider(openTelemetryCfg, toolsResource)
+	if err != nil {
+		panic(err)
+	}
+	logglobal.SetLoggerProvider(lp)
 
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 
@@ -113,6 +128,31 @@ func createMeterProvider(openTelemetryCfg config.OpenTelemetryConfig, res *resou
 	)
 
 	return mp, nil
+}
+
+func createLogProvider(openTelemetryCfg config.OpenTelemetryConfig, res *resource.Resource) (log.LoggerProvider, error) {
+	if openTelemetryCfg.OtlpEndpoint == "" {
+		return nooplog.NewLoggerProvider(), nil
+	}
+
+	// Create the OTLP exporter
+	exporter, err := otlploggrpc.New(
+		context.Background(),
+		otlploggrpc.WithHeaders(buildHeaders(openTelemetryCfg.OtlpHeaders)),
+		otlploggrpc.WithEndpointURL(openTelemetryCfg.OtlpEndpoint),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	lp := logsdk.NewLoggerProvider(
+		// Always be sure to batch in production.
+		logsdk.WithProcessor(logsdk.NewBatchProcessor(exporter)),
+		// Record information about this application in a Resource.
+		logsdk.WithResource(res),
+	)
+
+	return lp, nil
 }
 
 func buildHeaders(headersStr string) map[string]string {

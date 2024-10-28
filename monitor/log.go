@@ -29,7 +29,7 @@ func NewGlobalLogger() {
 		panic(err)
 	}
 
-	logger = otelzap.New(zapLogger)
+	logger = otelzap.New(zapLogger, otelzap.WithMinLevel(zapcore.InfoLevel))
 }
 
 type LoggingParam struct {
