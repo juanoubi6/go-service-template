@@ -2,11 +2,13 @@ package monitor
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/baggage"
 	"go.opentelemetry.io/otel/trace"
-	"net/http"
 )
 
 type KeyValuePair struct {
@@ -71,7 +73,7 @@ func (appCtx *AppContext) StartSpan(name string, opts ...trace.SpanStartOption) 
 		trace.WithSpanKind(trace.SpanKindServer),
 	)
 
-	newCtx, span := GetGlobalTracer().Start(appCtx, name, opts...)
+	newCtx, span := otel.GetTracerProvider().Tracer("default").Start(appCtx, name, opts...)
 
 	return &AppContext{Context: newCtx}, span
 }

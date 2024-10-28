@@ -20,42 +20,15 @@ import (
 	nooptrace "go.opentelemetry.io/otel/trace/noop"
 )
 
-var (
-	globalTracerProvider trace.TracerProvider
-	globalTracer         trace.Tracer
-	globalMeterProvider  metric.MeterProvider
-	globalMeter          metric.Meter
-)
-
-func GetGlobalTracer() trace.Tracer {
-	if globalTracer != nil {
-		return globalTracer
-	}
-
-	return otel.GetTracerProvider().Tracer("default-tracer")
-}
-
-func GetGlobalMeter() metric.Meter {
-	if globalMeter != nil {
-		return globalMeter
-	}
-
-	return otel.GetMeterProvider().Meter("default-meter")
-}
-
 func FlushMonitorTools(ctx context.Context) {
-	if globalTracerProvider != nil {
-		if gtp, ok := globalTracerProvider.(*tracesdk.TracerProvider); ok {
-			gtp.ForceFlush(ctx)
-			gtp.Shutdown(ctx)
-		}
+	if gtp, ok := otel.GetTracerProvider().(*tracesdk.TracerProvider); ok {
+		gtp.ForceFlush(ctx)
+		gtp.Shutdown(ctx)
 	}
 
-	if globalMeterProvider != nil {
-		if gmp, ok := globalMeterProvider.(*metricsdk.MeterProvider); ok {
-			gmp.ForceFlush(ctx)
-			gmp.Shutdown(ctx)
-		}
+	if gmp, ok := otel.GetMeterProvider().(*metricsdk.MeterProvider); ok {
+		gmp.ForceFlush(ctx)
+		gmp.Shutdown(ctx)
 	}
 }
 
@@ -74,18 +47,14 @@ func RegisterMonitoringTools(openTelemetryCfg config.OpenTelemetryConfig, appCfg
 	if err != nil {
 		panic(err)
 	}
-	globalTracerProvider = tp
-	globalTracer = tp.Tracer(appCfg.Name)
-	otel.SetTracerProvider(globalTracerProvider)
+	otel.SetTracerProvider(tp)
 
 	// Create a MeterProvider
 	mp, err := createMeterProvider(openTelemetryCfg, toolsResource)
 	if err != nil {
 		panic(err)
 	}
-	globalMeterProvider = mp
-	globalMeter = mp.Meter(appCfg.Name)
-	otel.SetMeterProvider(globalMeterProvider)
+	otel.SetMeterProvider(mp)
 
 	// TODO: Create a LogProvider once OpenTelemetry develops the SDK
 
