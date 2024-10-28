@@ -6,6 +6,9 @@ import (
 	"go-service-template/config"
 	customHTTP "go-service-template/http"
 	"go-service-template/monitor"
+	"net/http"
+	"time"
+
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/baggage"
@@ -15,8 +18,6 @@ import (
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 	"go.opentelemetry.io/otel/trace"
-	"net/http"
-	"time"
 )
 
 func registerSyncTraceProvider(collectorEndpoint string) {
@@ -57,7 +58,7 @@ func main() {
 	appCtx := monitor.CreateAppContextFromContext(context.Background(), "CLIENT-CORRELATION-ID")
 
 	// Create sync otel trace provider
-	registerSyncTraceProvider(appCfg.OpenTelemetryConfig.TracesCollectorEndpoint)
+	registerSyncTraceProvider(appCfg.OpenTelemetryConfig.OtlpEndpoint)
 	monitor.NewGlobalLogger()
 
 	// Create http client, it already has OTEL support to propagate spans

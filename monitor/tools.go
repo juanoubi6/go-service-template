@@ -3,11 +3,12 @@ package monitor
 import (
 	"context"
 	"go-service-template/config"
+	"strings"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
-	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/metric"
 	noopmetric "go.opentelemetry.io/otel/metric/noop"
 	"go.opentelemetry.io/otel/propagation"
@@ -64,7 +65,7 @@ func RegisterMonitoringTools(openTelemetryCfg config.OpenTelemetryConfig, appCfg
 	toolsResource := resource.NewWithAttributes(
 		semconv.SchemaURL,
 		semconv.ServiceName(appCfg.Name),
-		attribute.String("environment", env),
+		attribute.String("deployment.environment", env),
 		attribute.String("version", appCfg.Version),
 	)
 
@@ -94,20 +95,16 @@ func RegisterMonitoringTools(openTelemetryCfg config.OpenTelemetryConfig, appCfg
 	NewGlobalLogger()
 }
 
-// createTracerProvider returns an OpenTelemetry TracerProvider configured to use
-// the OTLP exporter that will send spans to the provided endpoint. The returned
-// TracerProvider will also use a Resource configured with all the information
-// about the application.
 func createTracerProvider(openTelemetryCfg config.OpenTelemetryConfig, res *resource.Resource) (trace.TracerProvider, error) {
-	if openTelemetryCfg.TracesCollectorEndpoint == "" {
+	if openTelemetryCfg.OtlpEndpoint == "" {
 		return nooptrace.NewTracerProvider(), nil
 	}
 
 	// Create the OTLP exporter
 	exporter, err := otlptracegrpc.New(
 		context.Background(),
-		otlptracegrpc.WithInsecure(),
-		otlptracegrpc.WithEndpoint(openTelemetryCfg.TracesCollectorEndpoint),
+		otlptracegrpc.WithHeaders(buildHeaders(openTelemetryCfg.OtlpHeaders)),
+		otlptracegrpc.WithEndpointURL(openTelemetryCfg.OtlpEndpoint),
 	)
 	if err != nil {
 		return nil, err
@@ -123,27 +120,42 @@ func createTracerProvider(openTelemetryCfg config.OpenTelemetryConfig, res *reso
 	return tp, nil
 }
 
-// createMeterProvider returns an OpenTelemetry MeterProvider configured to use
-// the OTLP exporter that will send spans to the provided endpoint. The returned
-// MeterProvider will also use a Resource configured with all the information
-// about the application.
 func createMeterProvider(openTelemetryCfg config.OpenTelemetryConfig, res *resource.Resource) (metric.MeterProvider, error) {
-	if openTelemetryCfg.MetricsCollectorEndpoint == "" {
+	if openTelemetryCfg.OtlpEndpoint == "" {
 		return noopmetric.NewMeterProvider(), nil
 	}
 
-	// Create the prometheus metrics exporter
-	meterReader, err := prometheus.New()
+	// Create the metrics exporter
+	exporter, err := otlpmetricgrpc.New(
+		context.Background(),
+		otlpmetricgrpc.WithHeaders(buildHeaders(openTelemetryCfg.OtlpHeaders)),
+		otlpmetricgrpc.WithEndpointURL(openTelemetryCfg.OtlpEndpoint),
+	)
 	if err != nil {
 		return nil, err
 	}
 
+	reader := metricsdk.NewPeriodicReader(exporter)
+
 	mp := metricsdk.NewMeterProvider(
-		// Always be sure to batch in production.
-		metricsdk.WithReader(meterReader),
+		metricsdk.WithReader(reader),
 		// Record information about this application in a Resource.
 		metricsdk.WithResource(res),
 	)
 
 	return mp, nil
+}
+
+func buildHeaders(headersStr string) map[string]string {
+	if headersStr == "" {
+		return nil
+	}
+
+	headers := make(map[string]string)
+	for _, header := range strings.Split(headersStr, ",") {
+		kv := strings.Split(header, "=")
+		headers[kv[0]] = kv[1]
+	}
+
+	return headers
 }

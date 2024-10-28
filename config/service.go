@@ -2,10 +2,11 @@ package config
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/spf13/viper"
 	"os"
 	"strings"
+
+	"github.com/pkg/errors"
+	"github.com/spf13/viper"
 )
 
 var ServiceConf = &ServiceConfig{}
@@ -40,9 +41,8 @@ type KafkaConfig struct {
 }
 
 type OpenTelemetryConfig struct {
-	TracesCollectorEndpoint  string `yaml:"tracesCollectorEndpoint"`
-	MetricsCollectorEndpoint string `yaml:"metricsCollectorEndpoint"`
-	LogsCollectorEndpoint    string `yaml:"logsCollectorEndpoint"`
+	OtlpEndpoint string `yaml:"otlpEndpoint"`
+	OtlpHeaders  string `yaml:"otlpHeaders"`
 }
 
 type DBConfig struct {

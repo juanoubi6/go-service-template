@@ -19,6 +19,5 @@ httpClientConfig:
 dBConfig:
   locationsDatabaseConnection: "postgres://postgres:password@localhost:5432/admin?sslmode=disable"
 openTelemetryConfig:
-  tracesCollectorEndpoint: "localhost:4317"
-  metricsCollectorEndpoint:
-  logsCollectorEndpoint:
+  otlpEndpoint:
+  otlpHeaders:
