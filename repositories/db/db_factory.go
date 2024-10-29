@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"go-service-template/config"
-	"go-service-template/monitor"
 	"go-service-template/repositories"
 	"net/url"
 	"regexp"
@@ -70,7 +69,7 @@ func connectDB(connString string, dbConfig config.DBConfig) (*sql.DB, error) {
 	// Find DB name
 	parsedURL, err := url.Parse(connString)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing connection string: %w", err)
+		return nil, fmt.Errorf("error parsing connection string: %w", err)
 	}
 	dbName := strings.TrimPrefix(parsedURL.Path, "/")
 
@@ -78,10 +77,6 @@ func connectDB(connString string, dbConfig config.DBConfig) (*sql.DB, error) {
 	dbPtr, err := otelsql.Open(driverName, uri, otelsql.WithDBName(dbName))
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to %s database: %w", driverName, err)
-	}
-
-	if err != nil {
-		return nil, err
 	}
 
 	dbPtr.SetMaxOpenConns(dbConfig.ConnMaxIdleTime)
@@ -105,34 +100,5 @@ func connectDB(connString string, dbConfig config.DBConfig) (*sql.DB, error) {
 		return nil, fmt.Errorf("database ping failed: %w", err)
 	}
 
-	go pingDB(dbPtr)
-
 	return dbPtr, nil
-}
-
-func pingDB(dbPtr *sql.DB) {
-	fnName := "pingDB"
-	pingDBLogger := monitor.GetStdLogger(fnName)
-
-	defer func() {
-		if r := recover(); r != nil {
-			pingDBLogger.Error("pingDB", "", "caught panic in pingDB goroutine", r.(error))
-		}
-	}()
-
-	pingFn := func() {
-		timeoutCtx, cancel := context.WithTimeout(context.Background(), time.Second*DefaultPingSec)
-		defer cancel()
-
-		err := dbPtr.PingContext(timeoutCtx)
-		if err != nil {
-			pingDBLogger.Error("pingDB", "", "failed to ping DB", err)
-		}
-
-		time.Sleep(time.Minute * 1)
-	}
-
-	for {
-		pingFn()
-	}
 }
